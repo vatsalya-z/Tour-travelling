@@ -165,9 +165,10 @@ export default function Header() {
             href="https://wa.me/919876543210?text=Hello%20TourTripHolidays%2C%20I%20would%20like%20to%20enquire%20about%20a%20tour%20package."
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2.5 bg-[#25D366] hover:bg-[#20bd5a] text-white px-4 py-2 rounded-xl shadow-xs hover:shadow transition-all duration-200 group"
+            aria-label="WhatsApp"
+            className="text-[#25D366] hover:text-[#20bd5a] hover:scale-110 transition-all duration-200"
           >
-              <FaWhatsapp className="w-6 h-6 text-white" />
+            <FaWhatsapp className="w-10 h-10" />
           </a>
         </div>
 
