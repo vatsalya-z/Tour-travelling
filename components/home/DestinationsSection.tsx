@@ -1,15 +1,24 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 interface DestinationsSectionProps {
   onSelectDestination?: (destination: string) => void;
 }
 
+interface DestinationCardItem {
+  name: string;
+  image: string;
+  destinationValue: string;
+  isSpecial?: boolean;
+}
+
 export default function DestinationsSection({ onSelectDestination }: DestinationsSectionProps) {
-  const destinations = [
+  const defaultDestinations: DestinationCardItem[] = [
     {
       name: "Jammu & Kashmir",
       image: "/images/destinations/kashmir.jpg",
@@ -58,6 +67,45 @@ export default function DestinationsSection({ onSelectDestination }: Destination
     },
   ];
 
+  const [destinations, setDestinations] = useState<DestinationCardItem[]>(defaultDestinations);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    const fetchLiveDestinations = async () => {
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from("destinations")
+          .select("name, cover_image, state, slug")
+          .eq("status", "published")
+          .limit(8);
+
+        if (data && !error && data.length > 0) {
+          const liveList: DestinationCardItem[] = data.map((d: any) => ({
+            name: d.name,
+            image: d.cover_image || "/images/destinations/kashmir.jpg",
+            destinationValue: d.state || d.name,
+          }));
+
+          // Always append the special "All 28 States" card
+          liveList.push({
+            name: "All 28 States",
+            image: "/images/destinations/all-states.jpg",
+            isSpecial: true,
+            destinationValue: "All 28 States - Custom Tour",
+          });
+
+          setDestinations(liveList);
+        }
+      } catch (err) {
+        console.warn("Could not load live destinations from Supabase:", err);
+      }
+    };
+
+    fetchLiveDestinations();
+  }, []);
+
   const handleClick = (destValue: string) => {
     if (onSelectDestination) {
       onSelectDestination(destValue);
@@ -77,7 +125,7 @@ export default function DestinationsSection({ onSelectDestination }: Destination
           </p>
         </div>
 
-        {/* 9 Destination Cards in a Row on Desktop */}
+        {/* Destination Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-3 sm:gap-3.5">
           {destinations.map((dest, idx) => (
             <div
@@ -92,6 +140,7 @@ export default function DestinationsSection({ onSelectDestination }: Destination
                 src={dest.image}
                 alt={dest.name}
                 fill
+                unoptimized={dest.image.startsWith("http")}
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 20vw, 12vw"
                 className="object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
               />

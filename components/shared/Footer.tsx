@@ -21,7 +21,7 @@ export default function Footer() {
     { name: "Tour Packages", href: "#packages" },
     { name: "Destinations", href: "#destinations" },
     { name: "Travel Guide", href: "#why-choose-us" },
-    { name: "About Us", href: "#why-choose-us" },
+    { name: "About Us", href: "/about" },
     { name: "Contact Us", href: "#footer" },
   ];
 

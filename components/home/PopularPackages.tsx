@@ -1,17 +1,32 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight, ArrowRight, Clock, Star } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { formatCurrency } from "@/lib/utils";
 
 interface PopularPackagesProps {
   onSelectPackage?: (packageName: string) => void;
 }
 
+interface PackageItem {
+  id: string | number;
+  title: string;
+  duration: string;
+  image: string;
+  rating: number;
+  reviews?: number;
+  price: string;
+  destination: string;
+}
+
 export default function PopularPackages({ onSelectPackage }: PopularPackagesProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const packages = [
+  const defaultPackages: PackageItem[] = [
     {
       id: 1,
       title: "Kashmir Tour Package",
@@ -64,6 +79,73 @@ export default function PopularPackages({ onSelectPackage }: PopularPackagesProp
     },
   ];
 
+  const [packages, setPackages] = useState<PackageItem[]>(defaultPackages);
+
+  useEffect(() => {
+    const fetchPublishedTours = async () => {
+      try {
+        const res = await fetch("/api/tours?limit=20");
+        const json = await res.json();
+
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          const livePackages: PackageItem[] = json.data.map((t: any) => ({
+            id: t.id,
+            title: t.name,
+            duration: `${t.nights} Nights / ${t.days} Days`,
+            image: t.cover_image || "/images/packages/kashmir.jpg",
+            rating: 4.9,
+            reviews: 150,
+            price: formatCurrency(t.discounted_price || t.price),
+            destination: t.destination?.name || t.state || t.name,
+          }));
+          setPackages(livePackages);
+          return;
+        }
+
+        // Fallback to client query if needed
+        if (isSupabaseConfigured()) {
+          const supabase = createClient();
+          const { data } = await supabase
+            .from("tours")
+            .select(`
+              id,
+              name,
+              days,
+              nights,
+              price,
+              discounted_price,
+              cover_image,
+              state,
+              destination_id,
+              destinations (
+                name
+              )
+            `)
+            .eq("status", "published")
+            .order("created_at", { ascending: false });
+
+          if (data && data.length > 0) {
+            const livePackages: PackageItem[] = data.map((t: any) => ({
+              id: t.id,
+              title: t.name,
+              duration: `${t.nights} Nights / ${t.days} Days`,
+              image: t.cover_image || "/images/packages/kashmir.jpg",
+              rating: 4.9,
+              reviews: 150,
+              price: formatCurrency(t.discounted_price || t.price),
+              destination: t.destinations?.name || t.state || t.name,
+            }));
+            setPackages(livePackages);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch published tours:", err);
+      }
+    };
+
+    fetchPublishedTours();
+  }, []);
+
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
       const { scrollLeft, clientWidth } = scrollRef.current;
@@ -82,25 +164,14 @@ export default function PopularPackages({ onSelectPackage }: PopularPackagesProp
   };
 
   const ViewAllButton = () => {
-    if (onSelectPackage) {
-      return (
-        <button
-          onClick={() => onSelectPackage("All 28 States - Custom Tour")}
-          className="inline-flex items-center gap-2 bg-[#F15A24] hover:bg-[#d94815] text-white font-extrabold text-sm px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-200 group cursor-pointer"
-        >
-          <span>View All Packages</span>
-          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-        </button>
-      );
-    }
     return (
-      <a
-        href="#packages"
+      <Link
+        href="/packages"
         className="inline-flex items-center gap-2 bg-[#F15A24] hover:bg-[#d94815] text-white font-extrabold text-sm px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-200 group"
       >
         <span>View All Packages</span>
         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-      </a>
+      </Link>
     );
   };
 
@@ -158,11 +229,12 @@ export default function PopularPackages({ onSelectPackage }: PopularPackagesProp
                   className="flex-shrink-0 w-[240px] sm:w-[260px] snap-start bg-white rounded-xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 overflow-hidden flex flex-col group cursor-pointer"
                 >
                   {/* Package Image */}
-                  <div className="relative h-36 sm:h-40 w-full overflow-hidden">
+                  <div className="relative h-36 sm:h-40 w-full overflow-hidden bg-slate-100">
                     <Image
                       src={pkg.image}
                       alt={pkg.title}
                       fill
+                      unoptimized={pkg.image.startsWith("http")}
                       sizes="260px"
                       className="object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
                     />
@@ -195,9 +267,8 @@ export default function PopularPackages({ onSelectPackage }: PopularPackagesProp
               ))}
             </div>
 
-            {/* Mobile & Tablet Controls (Buttons centered at the bottom of the section) */}
+            {/* Mobile & Tablet Controls */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4 mt-6 lg:hidden">
-              {/* Carousel Navigation Arrows */}
               <div className="flex items-center justify-center gap-3">
                 <button
                   type="button"
@@ -217,7 +288,6 @@ export default function PopularPackages({ onSelectPackage }: PopularPackagesProp
                 </button>
               </div>
 
-              {/* View All Packages CTA Button */}
               <div>
                 <ViewAllButton />
               </div>

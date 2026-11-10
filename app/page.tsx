@@ -1,21 +1,21 @@
 "use client";
 
 import React, { useState } from "react";
-import TopBar from "@/components/TopBar";
-import Header from "@/components/Header";
-import HeroSection from "@/components/HeroSection";
-import BenefitsStrip from "@/components/BenefitsStrip";
-import DestinationsSection from "@/components/DestinationsSection";
-import PopularPackages from "@/components/PopularPackages";
-import TravelInterests from "@/components/TravelInterests";
-import WhyChooseUs from "@/components/WhyChooseUs";
-import Testimonials from "@/components/Testimonials";
-import CTASection from "@/components/CTASection";
-import Newsletter from "@/components/Newsletter";
-import Footer from "@/components/Footer";
-import EnquiryModal from "@/components/EnquiryModal";
-import FloatingContact from "@/components/FloatingContact";
-import MobileBottomBar from "@/components/MobileBottomBar";
+import TopBar from "@/components/shared/TopBar";
+import Header from "@/components/shared/Header";
+import HeroSection from "@/components/home/HeroSection";
+import BenefitsStrip from "@/components/home/BenefitsStrip";
+import DestinationsSection from "@/components/home/DestinationsSection";
+import PopularPackages from "@/components/home/PopularPackages";
+import TravelInterests from "@/components/home/TravelInterests";
+import WhyChooseUs from "@/components/home/WhyChooseUs";
+import Testimonials from "@/components/home/Testimonials";
+import CTASection from "@/components/home/CTASection";
+import Newsletter from "@/components/home/Newsletter";
+import Footer from "@/components/shared/Footer";
+import EnquiryModal from "@/components/shared/EnquiryModal";
+import FloatingContact from "@/components/shared/FloatingContact";
+import MobileBottomBar from "@/components/shared/MobileBottomBar";
 
 export default function Home() {
   const [modalOpen, setModalOpen] = useState(false);
