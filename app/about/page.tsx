@@ -1,13 +1,19 @@
-import type { Metadata } from "next";
-import AboutPageClient from "./components/AboutPageClient";
+import React from "react";
+import { Metadata } from "next";
+import { getAboutContent } from "@/lib/about-service";
+import AboutPageClient from "./AboutPageClient";
+
+export const revalidate = 0; // Always serve fresh data
 
 export const metadata: Metadata = {
-  title: "About Us | TourTripHolidays – Explore India with Us",
+  title: "About Us | TourTripHolidays",
   description:
-    "Discover TourTripHolidays, your travel companion for exploring India's beautiful destinations, cultural experiences, and memorable journeys.",
+    "Learn about TourTripHolidays, your trusted domestic travel specialist across India. Discover handcrafted tour packages, transparent pricing, and 24/7 dedicated assistance.",
 };
 
-export default function AboutPage() {
-  return <AboutPageClient />;
+export default async function AboutPage() {
+  const content = await getAboutContent();
+
+  return <AboutPageClient initialContent={content} />;
 }
 

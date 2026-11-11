@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Menu,
   Bell,
@@ -29,6 +29,7 @@ export default function AdminHeader({
   title,
   subtitle,
 }: AdminHeaderProps) {
+  const router = useRouter();
   const pathname = usePathname();
   const { user, profile, signOut } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -69,6 +70,13 @@ export default function AdminHeader({
         crumbs.push({ label: "Bookings", href: "/admin/bookings" });
       } else if (parts[1] === "users") {
         crumbs.push({ label: "Customers", href: "/admin/users" });
+      } else if (parts[1] === "blogs") {
+        crumbs.push({ label: "Blog Management", href: "/admin/blogs" });
+        if (parts[2] === "create") {
+          crumbs.push({ label: "Create Blog", href: "/admin/blogs/create" });
+        } else if (parts[3] === "edit") {
+          crumbs.push({ label: "Edit Blog", href: pathname });
+        }
       } else if (parts[1] === "profile") {
         crumbs.push({ label: "Profile", href: "/admin/profile" });
       } else if (parts[1] === "settings") {
@@ -228,9 +236,10 @@ export default function AdminHeader({
               <div className="border-t border-[#E5EAF1] pt-1">
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={async () => {
                     setDropdownOpen(false);
-                    signOut();
+                    await signOut();
+                    router.push("/admin/login");
                   }}
                   className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[#DC4444] hover:bg-[#FEECEC] text-left font-medium transition-colors cursor-pointer"
                 >

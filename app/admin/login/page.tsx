@@ -119,8 +119,11 @@ export default function AdminLoginPage() {
           .eq("id", data.user.id)
           .single();
 
+        const roleLower = String(profile?.role || "").toLowerCase();
         const userIsAdmin =
-          profile?.role === "admin" || data.user.email === DEV_ADMIN_CREDENTIALS.email;
+          roleLower === "admin" ||
+          roleLower === "super_admin" ||
+          data.user.email?.toLowerCase() === DEV_ADMIN_CREDENTIALS.email.toLowerCase();
 
         if (!userIsAdmin) {
           await supabase.auth.signOut();

@@ -109,7 +109,8 @@ export async function POST(request: Request) {
     }
 
     const isDevAdmin = cleanEmail === DEV_ADMIN_CREDENTIALS.email.toLowerCase();
-    const isAdmin = isDevAdmin || dbRole === "admin";
+    const roleLower = String(dbRole || "").toLowerCase();
+    const isAdmin = isDevAdmin || roleLower === "admin" || roleLower === "super_admin";
 
     return NextResponse.json(
       {

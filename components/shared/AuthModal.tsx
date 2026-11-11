@@ -86,9 +86,6 @@ export default function AuthModal({
       setSuccessMsg("Login successful! Welcome back.");
       setTimeout(() => {
         onClose();
-        if (res.isAdmin) {
-          router.push("/admin");
-        }
       }, 500);
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : "An unexpected error occurred.");

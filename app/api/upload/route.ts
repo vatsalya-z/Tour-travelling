@@ -35,6 +35,7 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     const folder = (formData.get("folder") as string) || "tours";
+    const bucket = (formData.get("bucket") as string) || (folder === "blogs" ? "blog-images" : "tour-images");
 
     if (!file) {
       return NextResponse.json(
@@ -47,11 +48,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Ensure 'tour-images' bucket exists
+    // Ensure the target bucket exists (tour-images or blog-images)
     const { data: buckets } = await adminClient.storage.listBuckets();
-    const bucketExists = buckets?.some((b) => b.name === "tour-images");
+    const bucketExists = buckets?.some((b) => b.name === bucket);
     if (!bucketExists) {
-      await adminClient.storage.createBucket("tour-images", {
+      await adminClient.storage.createBucket(bucket, {
         public: true,
         fileSizeLimit: 10485760, // 10MB
       });
@@ -66,7 +67,7 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(arrayBuffer);
 
     const { data, error } = await adminClient.storage
-      .from("tour-images")
+      .from(bucket)
       .upload(filePath, buffer, {
         contentType: file.type || "image/jpeg",
         cacheControl: "3600",
@@ -86,7 +87,7 @@ export async function POST(request: Request) {
     }
 
     const { data: publicData } = adminClient.storage
-      .from("tour-images")
+      .from(bucket)
       .getPublicUrl(data.path);
 
     console.log(`[Upload API] Image uploaded successfully to: ${publicData.publicUrl}`);

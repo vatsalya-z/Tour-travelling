@@ -1,0 +1,202 @@
+import { NextResponse } from "next/server";
+import { getSupabaseApiClient } from "@/lib/supabase/api";
+import { Blog } from "@/types/blog";
+
+const DEFAULT_BLOGS: Blog[] = [
+  {
+    id: "b1111111-1111-4111-8111-111111111111",
+    title: "Exploring the Magical Dal Lake and Snow Valleys of Kashmir",
+    slug: "exploring-dal-lake-snow-valleys-kashmir",
+    excerpt: "Glide on shikaras across serene Dal Lake, surrounded by floating gardens and snow-capped Himalayan peaks.",
+    content: "Exploring the Magical Dal Lake and Snow Valleys of Kashmir",
+    featured_image: "/images/blogs/kashmir-dal-lake.webp",
+    category: "Himalayan Escapes",
+    author_name: "TourTripHolidays Editorial",
+    seo_title: "Exploring the Magical Dal Lake and Snow Valleys of Kashmir",
+    seo_description: "Glide on shikaras across serene Dal Lake, surrounded by floating gardens and snow-capped Himalayan peaks.",
+    focus_keyword: "kashmir dal lake",
+    image_alt: "Shikara on Dal Lake Srinagar with snow mountains background Kashmir",
+    status: "PUBLISHED",
+    published_at: "2026-11-01T10:00:00.000Z",
+    created_at: "2026-11-01T10:00:00.000Z",
+    updated_at: "2026-11-01T10:00:00.000Z",
+  },
+  {
+    id: "b2222222-2222-4222-8222-222222222222",
+    title: "Cruising the Emerald Backwaters and Coconut Lagoons of Kerala",
+    slug: "cruising-emerald-backwaters-kerala",
+    excerpt: "Experience tranquil luxury on traditional houseboats drifting along palms-fringed backwaters of Alleppey.",
+    content: "Cruising the Emerald Backwaters and Coconut Lagoons of Kerala",
+    featured_image: "/images/blogs/kerala-backwaters.webp",
+    category: "Beach & Coastal",
+    author_name: "TourTripHolidays Editorial",
+    seo_title: "Cruising the Emerald Backwaters and Coconut Lagoons of Kerala",
+    seo_description: "Experience tranquil luxury on traditional houseboats drifting along palms-fringed backwaters of Alleppey.",
+    focus_keyword: "kerala backwaters alleppey",
+    image_alt: "Traditional houseboat gliding through Alleppey backwaters Kerala",
+    status: "PUBLISHED",
+    published_at: "2026-11-03T10:00:00.000Z",
+    created_at: "2026-11-03T10:00:00.000Z",
+    updated_at: "2026-11-03T10:00:00.000Z",
+  },
+  {
+    id: "b3333333-3333-4333-8333-333333333333",
+    title: "Royal Heritage: Magnificent Forts, Palaces & Desert Nights of Rajasthan",
+    slug: "royal-heritage-forts-palaces-rajasthan",
+    excerpt: "Step back into imperial history with grand sandstone citadels, intricate jharokhas, and desert culture.",
+    content: "Royal Heritage: Magnificent Forts, Palaces & Desert Nights of Rajasthan",
+    featured_image: "/images/blogs/rajasthan-royal-forts.webp",
+    category: "Heritage & Culture",
+    author_name: "TourTripHolidays Editorial",
+    seo_title: "Royal Heritage: Magnificent Forts, Palaces & Desert Nights of Rajasthan",
+    seo_description: "Step back into imperial history with grand sandstone citadels, intricate jharokhas, and desert culture.",
+    focus_keyword: "rajasthan forts palaces",
+    image_alt: "Grand Rajasthan fortress illuminated at golden hour sunset",
+    status: "PUBLISHED",
+    published_at: "2026-11-05T10:00:00.000Z",
+    created_at: "2026-11-05T10:00:00.000Z",
+    updated_at: "2026-11-05T10:00:00.000Z",
+  },
+  {
+    id: "b4444444-4444-4444-8444-444444444444",
+    title: "Unwinding in Himachal: Pine Forests, Mountain Passes & Serene Vistas",
+    slug: "unwinding-in-himachal-pine-forests-passes",
+    excerpt: "Breathe crisp mountain air among alpine pines, winding scenic roads, and tranquil Himalayan settlements.",
+    content: "Unwinding in Himachal: Pine Forests, Mountain Passes & Serene Vistas",
+    featured_image: "/images/blogs/himachal-snow-valleys.webp",
+    category: "Himalayan Escapes",
+    author_name: "TourTripHolidays Editorial",
+    seo_title: "Unwinding in Himachal: Pine Forests, Mountain Passes & Serene Vistas",
+    seo_description: "Breathe crisp mountain air among alpine pines, winding scenic roads, and tranquil Himalayan settlements.",
+    focus_keyword: "himachal pine forests valleys",
+    image_alt: "Evergreen pine forests and snow Himalayan peaks Himachal Pradesh",
+    status: "PUBLISHED",
+    published_at: "2026-11-07T10:00:00.000Z",
+    created_at: "2026-11-07T10:00:00.000Z",
+    updated_at: "2026-11-07T10:00:00.000Z",
+  },
+  {
+    id: "b5555555-5555-4555-8555-555555555555",
+    title: "Coastal Charm: Sun-Kissed Beaches, Historic Chapels & Sunsets in Goa",
+    slug: "coastal-charm-beaches-sunsets-goa",
+    excerpt: "Golden Arabian Sea shorelines, warm tropical breezes, Portuguese architecture, and coastal hospitality.",
+    content: "Coastal Charm: Sun-Kissed Beaches, Historic Chapels & Sunsets in Goa",
+    featured_image: "/images/blogs/goa-coastal-sunsets.webp",
+    category: "Beach & Coastal",
+    author_name: "TourTripHolidays Editorial",
+    seo_title: "Coastal Charm: Sun-Kissed Beaches, Historic Chapels & Sunsets in Goa",
+    seo_description: "Golden Arabian Sea shorelines, warm tropical breezes, Portuguese architecture, and coastal hospitality.",
+    focus_keyword: "goa beaches sunsets",
+    image_alt: "Tropical Goa coastline with palm trees and sunset glow",
+    status: "PUBLISHED",
+    published_at: "2026-11-09T10:00:00.000Z",
+    created_at: "2026-11-09T10:00:00.000Z",
+    updated_at: "2026-11-09T10:00:00.000Z",
+  },
+  {
+    id: "b6666666-6666-4666-8666-666666666666",
+    title: "Spiritual Serenity: Timeless Ghats and Sacred Evening Aarti in Varanasi",
+    slug: "spiritual-serenity-timeless-ghats-varanasi",
+    excerpt: "Witness centuries of living spiritual heritage along ancient riverbanks illuminated by twilight diya lamps.",
+    content: "Spiritual Serenity: Timeless Ghats and Sacred Evening Aarti in Varanasi",
+    featured_image: "/images/blogs/varanasi-ganges-ghats.webp",
+    category: "Spiritual Journeys",
+    author_name: "TourTripHolidays Editorial",
+    seo_title: "Spiritual Serenity: Timeless Ghats and Sacred Evening Aarti in Varanasi",
+    seo_description: "Witness centuries of living spiritual heritage along ancient riverbanks illuminated by twilight diya lamps.",
+    focus_keyword: "varanasi ghats ganga aarti",
+    image_alt: "Evening Ganga Aarti and floating diya lamps on Varanasi ghats",
+    status: "PUBLISHED",
+    published_at: "2026-11-11T10:00:00.000Z",
+    created_at: "2026-11-11T10:00:00.000Z",
+    updated_at: "2026-11-11T10:00:00.000Z",
+  },
+];
+
+/**
+ * GET /api/blogs
+ * Public endpoint to fetch published blogs for website visitors.
+ */
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get("category");
+    const search = searchParams.get("search");
+    const pageParam = parseInt(searchParams.get("page") || "1", 10);
+    const limitParam = parseInt(searchParams.get("limit") || "9", 10);
+
+    const page = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+    const limit = isNaN(limitParam) || limitParam < 1 ? 9 : Math.min(limitParam, 50);
+    const offset = (page - 1) * limit;
+
+    const { client } = getSupabaseApiClient();
+
+    if (client) {
+      try {
+        let query = client
+          .from("blogs")
+          .select("*", { count: "exact" })
+          .eq("status", "PUBLISHED")
+          .order("published_at", { ascending: false, nullsFirst: false })
+          .range(offset, offset + limit - 1);
+
+        if (category && category !== "all") {
+          query = query.eq("category", category);
+        }
+
+        if (search && search.trim()) {
+          const q = search.trim();
+          query = query.or(`title.ilike.%${q}%,excerpt.ilike.%${q}%,focus_keyword.ilike.%${q}%`);
+        }
+
+        const { data: blogs, count, error } = await query;
+
+        if (!error && Array.isArray(blogs) && blogs.length > 0) {
+          const totalCount = count || blogs.length;
+          const totalPages = Math.ceil(totalCount / limit);
+          return NextResponse.json({
+            success: true,
+            count: totalCount,
+            page,
+            limit,
+            totalPages,
+            data: blogs,
+          });
+        }
+      } catch (dbErr) {
+        console.warn("[GET /api/blogs] Database query failed, serving defaults:", dbErr);
+      }
+    }
+
+    // Fallback response with the 6 published blogs
+    let filtered = DEFAULT_BLOGS;
+    if (category && category !== "all") {
+      filtered = filtered.filter((b) => b.category === category);
+    }
+    if (search && search.trim()) {
+      const q = search.trim().toLowerCase();
+      filtered = filtered.filter(
+        (b) =>
+          b.title.toLowerCase().includes(q) ||
+          (b.category || "").toLowerCase().includes(q) ||
+          (b.excerpt || "").toLowerCase().includes(q)
+      );
+    }
+
+    const totalCount = filtered.length;
+    const totalPages = Math.ceil(totalCount / limit);
+    const paginated = filtered.slice(offset, offset + limit);
+
+    return NextResponse.json({
+      success: true,
+      count: totalCount,
+      page,
+      limit,
+      totalPages,
+      data: paginated,
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Internal server error";
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
+  }
+}

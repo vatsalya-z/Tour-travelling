@@ -19,6 +19,12 @@ export interface RequesterAuthResult {
   userId: string | null;
 }
 
+function checkIsAdminRole(role?: string | null): boolean {
+  if (!role) return false;
+  const r = role.trim().toLowerCase();
+  return r === "admin" || r === "super_admin";
+}
+
 /**
  * Checks whether an incoming request comes from an authenticated administrator.
  * Supports:
@@ -90,7 +96,7 @@ export async function verifyAdminAuth(request: Request): Promise<AdminAuthResult
     const isDevAdmin = user.email?.toLowerCase() === DEV_ADMIN_CREDENTIALS.email.toLowerCase();
 
     // Check profiles table role
-    let isRoleAdmin = user.user_metadata?.role === "admin";
+    let isRoleAdmin = checkIsAdminRole(user.user_metadata?.role);
     if (adminClient) {
       const { data: profile } = await adminClient
         .from("profiles")
@@ -98,7 +104,7 @@ export async function verifyAdminAuth(request: Request): Promise<AdminAuthResult
         .eq("id", user.id)
         .maybeSingle();
 
-      if (profile?.role === "admin") {
+      if (checkIsAdminRole(profile?.role)) {
         isRoleAdmin = true;
       }
     }
@@ -119,7 +125,7 @@ export async function verifyAdminAuth(request: Request): Promise<AdminAuthResult
       isAdmin: false,
       user,
       userId: user.id,
-      error: "Forbidden: Only administrators can create or manage tours",
+      error: "Forbidden: Administrator privileges required",
       statusCode: 403,
     };
   }
@@ -134,7 +140,7 @@ export async function verifyAdminAuth(request: Request): Promise<AdminAuthResult
         const isDevAdmin =
           user.email?.toLowerCase() === DEV_ADMIN_CREDENTIALS.email.toLowerCase();
 
-        let isRoleAdmin = user.user_metadata?.role === "admin";
+        let isRoleAdmin = checkIsAdminRole(user.user_metadata?.role);
         if (adminClient) {
           const { data: profile } = await adminClient
             .from("profiles")
@@ -142,7 +148,7 @@ export async function verifyAdminAuth(request: Request): Promise<AdminAuthResult
             .eq("id", user.id)
             .maybeSingle();
 
-          if (profile?.role === "admin") {
+          if (checkIsAdminRole(profile?.role)) {
             isRoleAdmin = true;
           }
         }

@@ -2,22 +2,26 @@
 
 import React from "react";
 import { Target, Compass } from "lucide-react";
+import { AboutMissionVisionSection } from "@/types/about";
 
-export default function MissionVision() {
+interface MissionVisionProps {
+  data: AboutMissionVisionSection;
+}
+
+export default function MissionVision({ data }: MissionVisionProps) {
   return (
     <section className="py-12 sm:py-16 bg-white border-t border-[#DCEAF3]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Section Heading */}
         <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAF6FC] text-[#082B50] text-xs font-bold uppercase tracking-wider mb-3 border border-[#DCEAF3]">
-            <span>PURPOSE & DIRECTION</span>
-          </div>
+          {data.label && (
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAF6FC] text-[#082B50] text-xs font-bold uppercase tracking-wider mb-3 border border-[#DCEAF3]">
+              <span>{data.label}</span>
+            </div>
+          )}
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#082B50] tracking-tight">
-            Our Mission & <span className="text-[#F15A24]">Vision</span>
+            {data.heading}
           </h2>
-          <p className="mt-3 text-slate-600 text-sm sm:text-base font-medium">
-            Guided by a genuine passion for authentic domestic travel across India.
-          </p>
         </div>
 
         {/* Two Clean Content Blocks */}
@@ -32,15 +36,11 @@ export default function MissionVision() {
                 OUR MISSION
               </span>
               <h3 className="text-xl sm:text-2xl font-extrabold text-[#082B50] mt-1 mb-3">
-                Making Discovery Easier & Joyful
+                {data.mission_title}
               </h3>
               <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                To make discovering India easier and more enjoyable by providing thoughtfully planned tour packages and memorable travel experiences.
+                {data.mission_desc}
               </p>
-            </div>
-            <div className="mt-6 pt-5 border-t border-[#DCEAF3] flex items-center gap-2 text-xs font-semibold text-[#082B50]">
-              <span className="w-2 h-2 rounded-full bg-[#F15A24]" />
-              <span>Thoughtful itineraries • Transparent service • Authentic moments</span>
             </div>
           </div>
 
@@ -54,15 +54,11 @@ export default function MissionVision() {
                 OUR VISION
               </span>
               <h3 className="text-xl sm:text-2xl font-extrabold text-[#082B50] mt-1 mb-3">
-                Your Trusted Travel Companion
+                {data.vision_title}
               </h3>
               <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                To become a trusted travel companion for people who want to explore India&apos;s diverse destinations, cultures, and experiences.
+                {data.vision_desc}
               </p>
-            </div>
-            <div className="mt-6 pt-5 border-t border-[#DCEAF3] flex items-center gap-2 text-xs font-semibold text-[#082B50]">
-              <span className="w-2 h-2 rounded-full bg-[#082B50]" />
-              <span>All 28 Indian States • Cultural harmony • Lifelong memories</span>
             </div>
           </div>
         </div>

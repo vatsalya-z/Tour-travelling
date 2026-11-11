@@ -9,6 +9,7 @@ import DestinationsSection from "@/components/home/DestinationsSection";
 import PopularPackages from "@/components/home/PopularPackages";
 import TravelInterests from "@/components/home/TravelInterests";
 import WhyChooseUs from "@/components/home/WhyChooseUs";
+import BlogSection from "@/components/home/BlogSection";
 import Testimonials from "@/components/home/Testimonials";
 import CTASection from "@/components/home/CTASection";
 import Newsletter from "@/components/home/Newsletter";
@@ -52,6 +53,9 @@ export default function Home() {
 
         {/* Section H: Why Choose TourTripHolidays? */}
         <WhyChooseUs />
+
+        {/* Section H2: Travel Stories & Blogs */}
+        <BlogSection />
 
         {/* Section I: Customer Testimonials */}
         <Testimonials />

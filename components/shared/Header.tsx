@@ -57,16 +57,22 @@ export default function Header() {
   ];
 
   const destinationLinks = [
-    { name: "Jammu & Kashmir", href: "#destinations" },
-    { name: "Himachal Pradesh", href: "#destinations" },
-    { name: "Uttarakhand", href: "#destinations" },
-    { name: "Rajasthan", href: "#destinations" },
-    { name: "Kerala", href: "#destinations" },
-    { name: "Goa", href: "#destinations" },
-    { name: "Tamil Nadu", href: "#destinations" },
-    { name: "Assam & North East", href: "#destinations" },
-    { name: "View All 28 States", href: "#destinations" },
+    { name: "Jammu & Kashmir", href: "/#destinations" },
+    { name: "Himachal Pradesh", href: "/#destinations" },
+    { name: "Uttarakhand", href: "/#destinations" },
+    { name: "Rajasthan", href: "/#destinations" },
+    { name: "Kerala", href: "/#destinations" },
+    { name: "Goa", href: "/#destinations" },
+    { name: "Tamil Nadu", href: "/#destinations" },
+    { name: "Assam & North East", href: "/#destinations" },
+    { name: "View All 28 States", href: "/#destinations" },
   ];
+
+  // Active page helpers for existing routes
+  const isHomeActive = pathname === "/";
+  const isPackagesActive = pathname === "/packages" || pathname?.startsWith("/packages");
+  const isBlogActive = pathname === "/blog" || pathname?.startsWith("/blog");
+  const isAboutActive = pathname === "/about" || pathname?.startsWith("/about");
 
   return (
     <>
@@ -87,7 +93,7 @@ export default function Header() {
             <Link
               href="/"
               className={`relative py-1 hover:text-[#F15A24] transition-colors ${
-                pathname === "/"
+                isHomeActive
                   ? "text-[#F15A24] font-extrabold after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2.5px] after:bg-[#F15A24] after:rounded-full"
                   : "hover:text-[#F15A24]"
               }`}
@@ -101,17 +107,25 @@ export default function Header() {
               onMouseEnter={() => setPackagesOpen(true)}
               onMouseLeave={() => setPackagesOpen(false)}
             >
-              <button
-                className="flex items-center gap-1 hover:text-[#F15A24] transition-colors py-1 cursor-pointer font-bold"
-                onClick={() => setPackagesOpen(!packagesOpen)}
+              <Link
+                href="/packages"
+                className={`relative py-1 flex items-center gap-1 font-bold transition-colors ${
+                  isPackagesActive
+                    ? "text-[#F15A24] font-extrabold after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2.5px] after:bg-[#F15A24] after:rounded-full"
+                    : "hover:text-[#F15A24]"
+                }`}
               >
                 <span>Tour Packages</span>
                 <ChevronDown
                   className={`w-4 h-4 transition-transform duration-200 ${
-                    packagesOpen ? "rotate-180 text-[#F15A24]" : "text-slate-500"
+                    packagesOpen
+                      ? "rotate-180 text-[#F15A24]"
+                      : isPackagesActive
+                      ? "text-[#F15A24]"
+                      : "text-slate-500"
                   }`}
                 />
-              </button>
+              </Link>
 
               {packagesOpen && (
                 <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-slate-100 py-2.5 z-50 animate-in fade-in duration-150">
@@ -120,7 +134,11 @@ export default function Header() {
                       key={pkg.name}
                       href={pkg.href}
                       onClick={() => setPackagesOpen(false)}
-                      className="block px-4 py-2 text-sm text-[#10264A] hover:bg-[#EAF6FC] hover:text-[#F15A24] font-medium transition-colors"
+                      className={`block px-4 py-2 text-sm font-medium transition-colors ${
+                        pkg.href === "/packages" && pathname === "/packages"
+                          ? "bg-[#EAF6FC] text-[#F15A24] font-bold"
+                          : "text-[#10264A] hover:bg-[#EAF6FC] hover:text-[#F15A24]"
+                      }`}
                     >
                       {pkg.name}
                     </Link>
@@ -135,9 +153,9 @@ export default function Header() {
               onMouseEnter={() => setDestinationsOpen(true)}
               onMouseLeave={() => setDestinationsOpen(false)}
             >
-              <button
+              <a
+                href="/#destinations"
                 className="flex items-center gap-1 hover:text-[#F15A24] transition-colors py-1 cursor-pointer font-bold"
-                onClick={() => setDestinationsOpen(!destinationsOpen)}
               >
                 <span>Destinations</span>
                 <ChevronDown
@@ -145,35 +163,39 @@ export default function Header() {
                     destinationsOpen ? "rotate-180 text-[#F15A24]" : "text-slate-500"
                   }`}
                 />
-              </button>
+              </a>
 
               {destinationsOpen && (
                 <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-slate-100 py-2.5 z-50 animate-in fade-in duration-150">
                   {destinationLinks.map((dest) => (
-                    <Link
+                    <a
                       key={dest.name}
                       href={dest.href}
                       onClick={() => setDestinationsOpen(false)}
                       className="block px-4 py-2 text-sm text-[#10264A] hover:bg-[#EAF6FC] hover:text-[#F15A24] font-medium transition-colors"
                     >
                       {dest.name}
-                    </Link>
+                    </a>
                   ))}
                 </div>
               )}
             </div>
 
             <Link
-              href="#why-choose-us"
-              className="hover:text-[#F15A24] transition-colors py-1"
+              href="/blog"
+              className={`relative py-1 hover:text-[#F15A24] transition-colors ${
+                isBlogActive
+                  ? "text-[#F15A24] font-extrabold after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2.5px] after:bg-[#F15A24] after:rounded-full"
+                  : "hover:text-[#F15A24]"
+              }`}
             >
-              Travel Guide
+              Blog
             </Link>
 
             <Link
               href="/about"
               className={`relative py-1 hover:text-[#F15A24] transition-colors ${
-                pathname === "/about"
+                isAboutActive
                   ? "text-[#F15A24] font-extrabold after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2.5px] after:bg-[#F15A24] after:rounded-full"
                   : "hover:text-[#F15A24]"
               }`}
@@ -182,7 +204,7 @@ export default function Header() {
             </Link>
 
             <Link
-              href="#footer"
+              href="/#footer"
               className="hover:text-[#F15A24] transition-colors py-1"
             >
               Contact Us
@@ -295,7 +317,7 @@ export default function Header() {
                 href="/"
                 onClick={() => setMobileMenuOpen(false)}
                 className={`px-3 py-2 rounded-lg font-bold transition-colors ${
-                  pathname === "/"
+                  isHomeActive
                     ? "font-extrabold text-[#F15A24] bg-[#EAF6FC]"
                     : "hover:bg-slate-50 text-[#082B50]"
                 }`}
@@ -305,15 +327,33 @@ export default function Header() {
 
               {/* Mobile Packages Accordion */}
               <div>
-                <button
-                  onClick={() => setPackagesOpen(!packagesOpen)}
-                  className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 text-left font-bold"
+                <div
+                  className={`flex items-center justify-between rounded-lg transition-colors ${
+                    isPackagesActive ? "bg-[#EAF6FC]" : "hover:bg-slate-50"
+                  }`}
                 >
-                  <span>Tour Packages</span>
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform ${packagesOpen ? "rotate-180 text-[#F15A24]" : ""}`}
-                  />
-                </button>
+                  <Link
+                    href="/packages"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex-1 px-3 py-2 text-left font-bold ${
+                      isPackagesActive ? "font-extrabold text-[#F15A24]" : "text-[#082B50]"
+                    }`}
+                  >
+                    Tour Packages
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setPackagesOpen(!packagesOpen)}
+                    className="p-2 text-slate-500 hover:text-[#F15A24] cursor-pointer"
+                    aria-label="Toggle packages sub-menu"
+                  >
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${
+                        packagesOpen ? "rotate-180 text-[#F15A24]" : isPackagesActive ? "text-[#F15A24]" : ""
+                      }`}
+                    />
+                  </button>
+                </div>
                 {packagesOpen && (
                   <div className="pl-6 pr-2 py-1 space-y-1">
                     {packageLinks.map((pkg) => (
@@ -321,7 +361,11 @@ export default function Header() {
                         key={pkg.name}
                         href={pkg.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="block py-1.5 text-sm text-slate-600 hover:text-[#F15A24]"
+                        className={`block py-1.5 text-sm transition-colors ${
+                          pkg.href === "/packages" && pathname === "/packages"
+                            ? "text-[#F15A24] font-bold"
+                            : "text-slate-600 hover:text-[#F15A24]"
+                        }`}
                       >
                         {pkg.name}
                       </Link>
@@ -334,7 +378,7 @@ export default function Header() {
               <div>
                 <button
                   onClick={() => setDestinationsOpen(!destinationsOpen)}
-                  className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 text-left font-bold"
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 text-left font-bold text-[#082B50]"
                 >
                   <span>Destinations</span>
                   <ChevronDown
@@ -344,32 +388,36 @@ export default function Header() {
                 {destinationsOpen && (
                   <div className="pl-6 pr-2 py-1 space-y-1">
                     {destinationLinks.map((dest) => (
-                      <Link
+                      <a
                         key={dest.name}
                         href={dest.href}
                         onClick={() => setMobileMenuOpen(false)}
                         className="block py-1.5 text-sm text-slate-600 hover:text-[#F15A24]"
                       >
                         {dest.name}
-                      </Link>
+                      </a>
                     ))}
                   </div>
                 )}
               </div>
 
               <Link
-                href="#why-choose-us"
+                href="/blog"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-slate-50 font-bold"
+                className={`px-3 py-2 rounded-lg font-bold transition-colors ${
+                  isBlogActive
+                    ? "font-extrabold text-[#F15A24] bg-[#EAF6FC]"
+                    : "hover:bg-slate-50 text-[#082B50]"
+                }`}
               >
-                Travel Guide
+                Blog
               </Link>
 
               <Link
                 href="/about"
                 onClick={() => setMobileMenuOpen(false)}
                 className={`px-3 py-2 rounded-lg font-bold transition-colors ${
-                  pathname === "/about"
+                  isAboutActive
                     ? "font-extrabold text-[#F15A24] bg-[#EAF6FC]"
                     : "hover:bg-slate-50 text-[#082B50]"
                 }`}
@@ -378,9 +426,9 @@ export default function Header() {
               </Link>
 
               <Link
-                href="#footer"
+                href="/#footer"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-slate-50 font-bold"
+                className="px-3 py-2 rounded-lg hover:bg-slate-50 font-bold text-[#082B50]"
               >
                 Contact Us
               </Link>

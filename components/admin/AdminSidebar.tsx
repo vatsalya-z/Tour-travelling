@@ -1,21 +1,25 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Compass,
   MapPin,
   CalendarCheck,
   Users,
+  BookOpen,
   UserCog,
   Settings,
   LogOut,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   ExternalLink,
   Shield,
+  Info,
+  Globe,
 } from "lucide-react";
 import Logo from "@/components/shared/Logo";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -33,10 +37,23 @@ export default function AdminSidebar({
   mobileOpen,
   onCloseMobile,
 }: AdminSidebarProps) {
+  const router = useRouter();
   const pathname = usePathname();
   const { signOut, user } = useAuth();
 
-  const navigation = [
+  const isWebsiteActive =
+    pathname.startsWith("/admin/blogs") || pathname.startsWith("/admin/about");
+
+  const [websiteOpen, setWebsiteOpen] = useState(true);
+
+  // Keep website subfolder open if currently on a website page
+  useEffect(() => {
+    if (isWebsiteActive) {
+      setWebsiteOpen(true);
+    }
+  }, [isWebsiteActive]);
+
+  const primaryNavigation = [
     {
       name: "Overview",
       href: "/admin",
@@ -67,6 +84,24 @@ export default function AdminSidebar({
       icon: Users,
       exact: false,
     },
+  ];
+
+  const websiteSubItems = [
+    {
+      name: "Blog Management",
+      href: "/admin/blogs",
+      icon: BookOpen,
+      active: pathname.startsWith("/admin/blogs"),
+    },
+    {
+      name: "About Page",
+      href: "/admin/about",
+      icon: Info,
+      active: pathname.startsWith("/admin/about"),
+    },
+  ];
+
+  const secondaryNavigation = [
     {
       name: "Admin Profile",
       href: "/admin/profile",
@@ -81,7 +116,7 @@ export default function AdminSidebar({
     },
   ];
 
-  const isActive = (item: (typeof navigation)[0]) => {
+  const isItemActive = (item: { href: string; exact?: boolean }) => {
     if (item.exact) {
       return pathname === item.href;
     }
@@ -122,8 +157,118 @@ export default function AdminSidebar({
           )}
         </div>
 
-        {navigation.map((item) => {
-          const active = isActive(item);
+        {/* 1. Primary Operational Links */}
+        {primaryNavigation.map((item) => {
+          const active = isItemActive(item);
+          const Icon = item.icon;
+
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              onClick={onCloseMobile}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group relative ${
+                active
+                  ? "bg-[#FFF4EE] text-[#082B50] font-semibold border-l-3 border-[#F04B16]"
+                  : "text-[#64748B] hover:bg-[#F5F8FC] hover:text-[#172B4D]"
+              } ${collapsed ? "justify-center px-0" : ""}`}
+              title={collapsed ? item.name : undefined}
+            >
+              <Icon
+                className={`w-4 h-4 flex-shrink-0 transition-colors ${
+                  active ? "text-[#F04B16]" : "text-[#64748B] group-hover:text-[#082B50]"
+                }`}
+              />
+              {!collapsed && <span className="truncate">{item.name}</span>}
+
+              {/* Active Indicator dot when collapsed */}
+              {collapsed && active && (
+                <span className="absolute right-1 top-1 w-2 h-2 rounded-full bg-[#F04B16]" />
+              )}
+            </Link>
+          );
+        })}
+
+        {/* 2. Website Subfolder (Blogs & About Page) */}
+        <div className="pt-0.5">
+          <button
+            type="button"
+            onClick={() => {
+              if (collapsed) {
+                onToggleCollapse();
+                setWebsiteOpen(true);
+              } else {
+                setWebsiteOpen(!websiteOpen);
+              }
+            }}
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer ${
+              isWebsiteActive
+                ? "bg-[#FFF4EE] text-[#082B50] font-semibold border-l-3 border-[#F04B16]"
+                : "text-[#64748B] hover:bg-[#F5F8FC] hover:text-[#172B4D]"
+            } ${collapsed ? "justify-center px-0 relative" : ""}`}
+            title={collapsed ? "Website (Blogs, About Page)" : undefined}
+          >
+            <div className={`flex items-center gap-3 ${collapsed ? "justify-center" : ""}`}>
+              <Globe
+                className={`w-4 h-4 flex-shrink-0 transition-colors ${
+                  isWebsiteActive ? "text-[#F04B16]" : "text-[#64748B] group-hover:text-[#082B50]"
+                }`}
+              />
+              {!collapsed && <span>Website</span>}
+            </div>
+
+            {!collapsed && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#EAF6FC] text-[#082B50]">
+                  2
+                </span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-[#64748B] transition-transform duration-200 ${
+                    websiteOpen ? "rotate-0" : "-rotate-90"
+                  }`}
+                />
+              </div>
+            )}
+
+            {collapsed && isWebsiteActive && (
+              <span className="absolute right-1 top-1 w-2 h-2 rounded-full bg-[#F04B16]" />
+            )}
+          </button>
+
+          {/* Subfolder Tree */}
+          {!collapsed && websiteOpen && (
+            <div className="ml-4 pl-3.5 my-1 space-y-1 border-l-2 border-[#DCEAF3] animate-in fade-in slide-in-from-top-1 duration-150">
+              {websiteSubItems.map((subItem) => {
+                const SubIcon = subItem.icon;
+                return (
+                  <Link
+                    key={subItem.name}
+                    href={subItem.href}
+                    onClick={onCloseMobile}
+                    className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs transition-all group ${
+                      subItem.active
+                        ? "bg-[#FFF4EE] text-[#F04B16] font-bold shadow-2xs"
+                        : "text-[#64748B] hover:bg-[#F5F8FC] hover:text-[#082B50] font-medium"
+                    }`}
+                  >
+                    <SubIcon
+                      className={`w-3.5 h-3.5 flex-shrink-0 transition-colors ${
+                        subItem.active
+                          ? "text-[#F04B16]"
+                          : "text-[#64748B] group-hover:text-[#082B50]"
+                      }`}
+                    />
+                    <span className="truncate">{subItem.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* 3. Secondary Administrative Links */}
+        {secondaryNavigation.map((item) => {
+          const active = isItemActive(item);
           const Icon = item.icon;
 
           return (
@@ -169,7 +314,10 @@ export default function AdminSidebar({
         </Link>
 
         <button
-          onClick={() => signOut()}
+          onClick={async () => {
+            await signOut();
+            router.push("/admin/login");
+          }}
           className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-[#DC4444] hover:bg-[#FEECEC] transition-colors cursor-pointer ${
             collapsed ? "justify-center px-0" : ""
           }`}

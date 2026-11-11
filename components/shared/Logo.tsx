@@ -15,7 +15,7 @@ export default function Logo({ variant = "light", className = "" }: LogoProps) {
       {isDarkBg ? (
         <div className="bg-white/95 rounded-xl px-3 py-1.5 shadow-sm hover:bg-white transition-colors duration-200">
           <Image
-            src="/images/logo/brand-logo.jpeg"
+            src="/images/logo/brand-logo.webp"
             alt="TourTripHolidays - Explore India. Discover Happiness."
             width={200}
             height={60}
@@ -28,7 +28,7 @@ export default function Logo({ variant = "light", className = "" }: LogoProps) {
           src="/images/logo/logo-transparent.png"
           alt="TourTripHolidays - Explore India. Discover Happiness."
           width={215}
-          height={65}
+          height={65} 
           priority
           className="h-10 sm:h-12 w-auto object-contain group-hover:scale-102 transition-transform duration-200"
         />

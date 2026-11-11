@@ -68,7 +68,8 @@ export async function POST(request: Request) {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const assignedRole = role === "admin" ? "admin" : "customer";
+    // Security: Public registration can NEVER self-assign admin privileges. Always force 'customer' role.
+    const assignedRole = "customer";
     const cleanFullName = full_name ? String(full_name).trim() : null;
     const cleanMobile = mobile_number ? String(mobile_number).trim() : null;
 
@@ -169,7 +170,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         success: true,
-        message: `${assignedRole === "admin" ? "Admin" : "User"} registered successfully. Password stored in bcrypt hashed format.`,
+        message: "Customer registered successfully. Password stored in bcrypt hashed format.",
         data: {
           token_type: "Bearer",
           access_token: signInData?.session?.access_token || null,

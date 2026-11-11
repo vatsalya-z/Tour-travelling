@@ -18,20 +18,20 @@ import {
 export default function Footer() {
   const quickLinks = [
     { name: "Home", href: "/" },
-    { name: "Tour Packages", href: "#packages" },
-    { name: "Destinations", href: "#destinations" },
-    { name: "Travel Guide", href: "#why-choose-us" },
+    { name: "Tour Packages", href: "/packages" },
+    { name: "Destinations", href: "/#destinations" },
     { name: "About Us", href: "/about" },
-    { name: "Contact Us", href: "#footer" },
+    { name: "Blog", href: "/blog" },
+    { name: "Contact Us", href: "/#footer" },
   ];
 
   const popularDestinations = [
-    { name: "Kashmir Tour Packages", href: "#packages" },
-    { name: "Himachal Tour Packages", href: "#packages" },
-    { name: "Kerala Tour Packages", href: "#packages" },
-    { name: "Rajasthan Tour Packages", href: "#packages" },
-    { name: "Goa Tour Packages", href: "#packages" },
-    { name: "All Destinations", href: "#destinations" },
+    { name: "Kashmir Tour Packages", href: "/packages?search=kashmir" },
+    { name: "Himachal Tour Packages", href: "/packages?search=himachal" },
+    { name: "Kerala Tour Packages", href: "/packages?search=kerala" },
+    { name: "Rajasthan Tour Packages", href: "/packages?search=rajasthan" },
+    { name: "Goa Tour Packages", href: "/packages?search=goa" },
+    { name: "All Destinations", href: "/#destinations" },
   ];
 
   return (

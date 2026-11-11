@@ -354,8 +354,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfile(null);
   };
 
+  const roleLower = (profile?.role || "").toLowerCase();
   const isAdmin =
-    profile?.role === "admin" || user?.email?.toLowerCase() === DEV_ADMIN_CREDENTIALS.email.toLowerCase();
+    roleLower === "admin" ||
+    roleLower === "super_admin" ||
+    user?.email?.toLowerCase() === DEV_ADMIN_CREDENTIALS.email.toLowerCase();
 
   return (
     <AuthContext.Provider
