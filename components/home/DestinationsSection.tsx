@@ -5,9 +5,10 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { EnquiryPackageInfo } from "@/types/lead";
 
 interface DestinationsSectionProps {
-  onSelectDestination?: (destination: string) => void;
+  onSelectDestination?: (destination: string | EnquiryPackageInfo) => void;
 }
 
 interface DestinationCardItem {
@@ -106,9 +107,14 @@ export default function DestinationsSection({ onSelectDestination }: Destination
     fetchLiveDestinations();
   }, []);
 
-  const handleClick = (destValue: string) => {
+  const handleClick = (dest: DestinationCardItem) => {
     if (onSelectDestination) {
-      onSelectDestination(destValue);
+      onSelectDestination({
+        destinationName: dest.destinationValue || dest.name,
+        packageImage: dest.image,
+        sourcePage: "Homepage",
+        sourceCta: "Explore India Destination Card",
+      });
     }
   };
 
@@ -130,7 +136,7 @@ export default function DestinationsSection({ onSelectDestination }: Destination
           {destinations.map((dest, idx) => (
             <div
               key={idx}
-              onClick={() => handleClick(dest.destinationValue)}
+              onClick={() => handleClick(dest)}
               className={`group relative rounded-xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 block aspect-[3/4.2] cursor-pointer ${
                 dest.isSpecial ? "ring-2 ring-[#F15A24]/70" : "border border-slate-200/90"
               }`}

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSupabaseApiClient } from "@/lib/supabase/api";
 import { verifyAdminAuth, getRequesterAuth } from "@/lib/supabase/auth-guard";
 import { slugify } from "@/lib/utils";
+import { DEFAULT_TOURS } from "@/lib/tour-default-data";
 
 interface RouteContext {
   params: Promise<{
@@ -42,8 +43,17 @@ export async function GET(request: Request, context: RouteContext) {
     }
 
     const { client } = getSupabaseApiClient();
+    const tourId = id.trim();
 
     if (!client) {
+      const fallbackTour = DEFAULT_TOURS.find((t) => t.id === tourId || t.slug === tourId);
+      if (fallbackTour) {
+        return NextResponse.json({
+          success: true,
+          message: "Tour retrieved successfully",
+          data: fallbackTour,
+        });
+      }
       return NextResponse.json(
         {
           success: false,
@@ -54,8 +64,6 @@ export async function GET(request: Request, context: RouteContext) {
       );
     }
 
-    const tourId = id.trim();
-
     // Query tour with joined destination details
     const { data: tour, error } = await client
       .from("tours")
@@ -63,18 +71,27 @@ export async function GET(request: Request, context: RouteContext) {
       .eq("id", tourId)
       .maybeSingle();
 
-    if (error) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Failed to fetch tour",
-          error: error.message,
-        },
-        { status: 500 }
-      );
-    }
+    if (error || !tour) {
+      const fallbackTour = DEFAULT_TOURS.find((t) => t.id === tourId || t.slug === tourId);
+      if (fallbackTour) {
+        return NextResponse.json({
+          success: true,
+          message: "Tour retrieved successfully",
+          data: fallbackTour,
+        });
+      }
 
-    if (!tour) {
+      if (error) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Failed to fetch tour",
+            error: error.message,
+          },
+          { status: 500 }
+        );
+      }
+
       return NextResponse.json(
         {
           success: false,

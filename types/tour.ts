@@ -19,7 +19,7 @@ export interface Tour {
   short_description: string | null;
   description: string | null;
   destination_id: string | null;
-  destination?: Destination;
+  destination?: Partial<Destination>;
   state?: string | null;
   category: string;
   tour_type: string;

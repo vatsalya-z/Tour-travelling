@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSupabaseApiClient } from "@/lib/supabase/api";
 import { verifyAdminAuth, getRequesterAuth } from "@/lib/supabase/auth-guard";
 import { slugify } from "@/lib/utils";
+import { DEFAULT_TOURS } from "@/lib/tour-default-data";
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -15,6 +16,83 @@ function isValidDateString(str: string): boolean {
   return !isNaN(d.getTime());
 }
 
+function getFilteredDefaultTours(params: {
+  search?: string | null;
+  category?: string | null;
+  state?: string | null;
+  destination_id?: string | null;
+  featured?: string | null;
+  statusParam?: string | null;
+  sortBy?: string | null;
+  isAdmin?: boolean;
+}) {
+  let list = [...DEFAULT_TOURS];
+  if (!params.isAdmin) {
+    list = list.filter((t) => t.status === "published");
+  } else if (params.statusParam && params.statusParam !== "all") {
+    list = list.filter((t) => t.status === params.statusParam);
+  }
+
+  if (params.destination_id) {
+    list = list.filter((t) => t.destination_id === params.destination_id);
+  }
+  if (params.state) {
+    list = list.filter((t) => (t.state || "").toLowerCase().includes(params.state!.toLowerCase()));
+  }
+  if (params.category) {
+    list = list.filter((t) => (t.category || "").toLowerCase().includes(params.category!.toLowerCase()));
+  }
+  if (params.featured !== null && params.featured !== undefined && params.featured !== "") {
+    const isFeat = params.featured === "true" || params.featured === "1";
+    list = list.filter((t) => !!t.featured === isFeat);
+  }
+  if (params.search && params.search.trim()) {
+    const q = params.search.trim().toLowerCase();
+    list = list.filter(
+      (t) =>
+        t.name.toLowerCase().includes(q) ||
+        (t.state || "").toLowerCase().includes(q) ||
+        (t.category || "").toLowerCase().includes(q) ||
+        (t.destination?.name || "").toLowerCase().includes(q)
+    );
+  }
+
+  // Sort
+  switch (params.sortBy) {
+    case "price-asc":
+      list.sort((a, b) => (a.discounted_price || a.price) - (b.discounted_price || b.price));
+      break;
+    case "price-desc":
+      list.sort((a, b) => (b.discounted_price || b.price) - (a.discounted_price || a.price));
+      break;
+    case "name-asc":
+    case "name":
+      list.sort((a, b) => a.name.localeCompare(b.name));
+      break;
+    case "name-desc":
+      list.sort((a, b) => b.name.localeCompare(a.name));
+      break;
+    case "duration-asc":
+      list.sort((a, b) => a.days - b.days);
+      break;
+    case "duration-desc":
+      list.sort((a, b) => b.days - a.days);
+      break;
+    case "oldest":
+      list.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      break;
+    case "newest":
+    default:
+      list.sort((a, b) => {
+        if (a.featured && !b.featured) return -1;
+        if (!a.featured && b.featured) return 1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+      break;
+  }
+  return list;
+}
+
 /**
  * GET /api/tours
  * Fetch all tours from existing Supabase public.tours table.
@@ -23,19 +101,6 @@ function isValidDateString(str: string): boolean {
  */
 export async function GET(request: Request) {
   try {
-    const { client } = getSupabaseApiClient();
-
-    if (!client) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Database connection failed",
-          error: "Supabase credentials are not configured in environment",
-        },
-        { status: 500 }
-      );
-    }
-
     const { searchParams } = new URL(request.url);
     const destination_id = searchParams.get("destination_id");
     const state = searchParams.get("state");
@@ -54,6 +119,29 @@ export async function GET(request: Request) {
 
     // Determine requester privileges
     const requesterAuth = await getRequesterAuth(request);
+
+    const { client } = getSupabaseApiClient();
+
+    if (!client) {
+      const fallbackList = getFilteredDefaultTours({
+        search,
+        category,
+        state,
+        destination_id,
+        featured,
+        statusParam,
+        sortBy,
+        isAdmin: requesterAuth.isAdmin,
+      });
+      const total = fallbackList.length;
+      const totalPages = Math.ceil(total / limit) || 1;
+      return NextResponse.json({
+        success: true,
+        message: "Tours retrieved successfully",
+        data: fallbackList.slice(offset, offset + limit),
+        pagination: { page, limit, total, totalPages },
+      });
+    }
 
     let query = client
       .from("tours")
@@ -145,24 +233,51 @@ export async function GET(request: Request) {
 
     const { data, count, error } = await query;
 
-    if (error) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Failed to fetch tours",
-          error: error.message,
-        },
-        { status: 500 }
-      );
+    let toursData = Array.isArray(data) ? [...data] : [];
+    let total = count || toursData.length;
+
+    if (error || toursData.length === 0) {
+      if (error) {
+        console.warn("Supabase tours query error, using fallback catalog:", error.message);
+      }
+      const fallbackList = getFilteredDefaultTours({
+        search,
+        category,
+        state,
+        destination_id,
+        featured,
+        statusParam,
+        sortBy,
+        isAdmin: requesterAuth.isAdmin,
+      });
+      total = fallbackList.length;
+      toursData = fallbackList.slice(offset, offset + limit);
+    } else {
+      // Merge any default tours (such as the new Kashmir winter tours) if not present in Supabase
+      const existingSlugs = new Set(toursData.map((t: any) => t.slug));
+      const filteredDefaults = getFilteredDefaultTours({
+        search,
+        category,
+        state,
+        destination_id,
+        featured,
+        statusParam,
+        sortBy,
+        isAdmin: requesterAuth.isAdmin,
+      });
+      const missingDefaults = filteredDefaults.filter((t) => !existingSlugs.has(t.slug));
+      if (missingDefaults.length > 0) {
+        toursData = [...toursData, ...missingDefaults];
+        total = total + missingDefaults.length;
+      }
     }
 
-    const total = count || 0;
     const totalPages = Math.ceil(total / limit) || 1;
 
     return NextResponse.json({
       success: true,
       message: "Tours retrieved successfully",
-      data: data || [],
+      data: toursData || [],
       pagination: {
         page,
         limit,
@@ -171,15 +286,47 @@ export async function GET(request: Request) {
       },
     });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Internal server error";
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Internal server error",
-        error: message,
-      },
-      { status: 500 }
-    );
+    console.warn("GET /api/tours exception, falling back to default catalog:", err);
+    try {
+      const { searchParams } = new URL(request.url);
+      const fallbackList = getFilteredDefaultTours({
+        search: searchParams.get("search"),
+        category: searchParams.get("category"),
+        state: searchParams.get("state"),
+        destination_id: searchParams.get("destination_id"),
+        featured: searchParams.get("featured"),
+        statusParam: searchParams.get("status"),
+        sortBy: searchParams.get("sortBy") || "newest",
+      });
+      const pageParam = parseInt(searchParams.get("page") || "1", 10);
+      const page = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+      const limitParam = parseInt(searchParams.get("limit") || "20", 10);
+      const limit = isNaN(limitParam) ? 20 : Math.min(Math.max(limitParam, 1), 100);
+      const offset = (page - 1) * limit;
+      const total = fallbackList.length;
+      const totalPages = Math.ceil(total / limit) || 1;
+      return NextResponse.json({
+        success: true,
+        message: "Tours retrieved successfully",
+        data: fallbackList.slice(offset, offset + limit),
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+        },
+      });
+    } catch {
+      const message = err instanceof Error ? err.message : "Internal server error";
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Internal server error",
+          error: message,
+        },
+        { status: 500 }
+      );
+    }
   }
 }
 

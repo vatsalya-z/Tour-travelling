@@ -29,6 +29,7 @@ import FloatingContact from "@/components/shared/FloatingContact";
 import MobileBottomBar from "@/components/shared/MobileBottomBar";
 import { Tour } from "@/types/tour";
 import { formatCurrency } from "@/lib/utils";
+import { EnquiryPackageInfo } from "@/types/lead";
 
 function TourPackagesContent() {
   const searchParams = useSearchParams();
@@ -46,6 +47,7 @@ function TourPackagesContent() {
   // Modal State
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTourName, setSelectedTourName] = useState("");
+  const [selectedPackageInfo, setSelectedPackageInfo] = useState<EnquiryPackageInfo | undefined>(undefined);
 
   // Sync search param changes from URL
   useEffect(() => {
@@ -123,9 +125,172 @@ function TourPackagesContent() {
       });
   }, [tours, searchQuery, selectedCategory, sortBy]);
 
-  const handleOpenEnquiry = (tourName: string) => {
-    setSelectedTourName(tourName);
+  // Featured Kashmir Winter Packages
+  const kashmirTours = useMemo(() => {
+    return tours.filter((tour) => {
+      if (tour.status !== "published") return false;
+      const dName = (tour.destination?.name || tour.state || "").toLowerCase();
+      const tName = tour.name.toLowerCase();
+      return dName.includes("kashmir") || tName.includes("kashmir");
+    });
+  }, [tours]);
+
+  const handleOpenEnquiry = (tour: Tour | string, sourceCta?: string) => {
+    if (typeof tour === "string") {
+      setSelectedTourName(tour);
+      setSelectedPackageInfo({
+        tourName: tour,
+        destinationName: tour,
+        sourcePage: "/packages",
+        sourceCta: sourceCta || "Tour Packages Listing",
+      });
+    } else {
+      setSelectedTourName(tour.name);
+      setSelectedPackageInfo({
+        tourId: tour.id,
+        tourName: tour.name,
+        tourSlug: tour.slug,
+        destinationId: tour.destination_id || null,
+        destinationName: tour.destination?.name || tour.state || tour.name,
+        packagePrice: tour.discounted_price || tour.price,
+        packageImage: tour.cover_image || null,
+        packageUrl: typeof window !== "undefined" ? `${window.location.origin}/packages#${tour.slug}` : undefined,
+        sourcePage: "/packages",
+        sourceCta: sourceCta || "Tour Packages Listing Card",
+      });
+    }
     setModalOpen(true);
+  };
+
+  const renderTourCard = (tour: Tour, ctaSource?: string) => {
+    const destinationName = tour.destination?.name || tour.state || "India";
+    const hasDiscount =
+      tour.discounted_price !== null &&
+      tour.discounted_price !== undefined &&
+      Number(tour.discounted_price) > 0 &&
+      Number(tour.discounted_price) < Number(tour.price);
+
+    const discountPercent = hasDiscount
+      ? Math.round(
+          ((Number(tour.price) - Number(tour.discounted_price)) /
+            Number(tour.price)) *
+            100
+        )
+      : 0;
+
+    const displayPrice = hasDiscount ? tour.discounted_price : tour.price;
+
+    return (
+      <article
+        key={tour.id}
+        className="bg-white rounded-2xl border border-[#E5EAF1] shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col overflow-hidden group"
+      >
+        {/* Tour Cover Image (100% Dynamic from Backend) */}
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 flex-shrink-0">
+          {tour.cover_image ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={tour.cover_image}
+              alt={tour.name}
+              loading="lazy"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 p-4 text-center">
+              <Compass className="w-8 h-8 text-slate-400 mb-2" />
+              <span className="text-xs font-semibold text-slate-500">
+                {tour.name}
+              </span>
+            </div>
+          )}
+
+          {/* Top Badges (100% Dynamic from Backend) */}
+          <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+            {hasDiscount ? (
+              <span className="bg-[#F15A24] text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full shadow-md">
+                {discountPercent}% OFF
+              </span>
+            ) : tour.category ? (
+              <span className="bg-[#082B50]/80 backdrop-blur-xs text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-xs">
+                {tour.category}
+              </span>
+            ) : (
+              <span />
+            )}
+
+            <span className="bg-white/95 backdrop-blur-xs text-[#082B50] text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3 text-[#16A36A]" />
+              <span>Verified</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Card Body (100% Dynamic from Backend) */}
+        <div className="p-5 flex-1 flex flex-col justify-between">
+          <div>
+            {/* Destination & Duration Chips */}
+            <div className="flex items-center gap-2 mb-2.5 flex-wrap">
+              {destinationName && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#082B50] bg-[#EAF6FC] px-2.5 py-0.5 rounded-full">
+                  <MapPin className="w-3 h-3 text-[#F15A24] flex-shrink-0" />
+                  <span className="truncate max-w-[140px]">{destinationName}</span>
+                </span>
+              )}
+
+              {(tour.days || tour.nights) && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                  <Clock className="w-3 h-3 text-[#F15A24] flex-shrink-0" />
+                  <span>
+                    {tour.days} Days / {tour.nights} Nights
+                  </span>
+                </span>
+              )}
+            </div>
+
+            {/* Package Name */}
+            <h2 className="font-extrabold text-[#082B50] text-base group-hover:text-[#F15A24] transition-colors line-clamp-2 leading-snug">
+              {tour.name}
+            </h2>
+
+            {/* Short Description */}
+            {(tour.short_description || tour.description) && (
+              <p className="text-xs text-[#64748B] mt-2 line-clamp-2 leading-relaxed">
+                {tour.short_description || tour.description}
+              </p>
+            )}
+          </div>
+
+          {/* Pricing and Action Row */}
+          <div className="mt-5 pt-3.5 border-t border-[#E5EAF1] flex items-center justify-between gap-3">
+            <div>
+              <span className="text-[10px] text-slate-400 block font-medium uppercase tracking-wider">
+                Starting Price
+              </span>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-lg font-black text-[#082B50]">
+                  {formatCurrency(displayPrice)}
+                </span>
+                {hasDiscount && (
+                  <span className="text-xs text-slate-400 line-through">
+                    {formatCurrency(tour.price)}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* View Details / Enquire Button */}
+            <button
+              type="button"
+              onClick={() => handleOpenEnquiry(tour, ctaSource)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#082B50] hover:bg-[#F15A24] text-white text-xs font-bold transition-all shadow-xs group/btn cursor-pointer"
+            >
+              <span>View Details</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
+            </button>
+          </div>
+        </div>
+      </article>
+    );
   };
 
   return (
@@ -284,10 +449,62 @@ function TourPackagesContent() {
       </section>
 
       {/* ===================================================================
+          2B. FEATURED KASHMIR WINTER PACKAGES SPOTLIGHT
+          - Dedicated spotlight section on Kashmir winter holidays
+          - Shown on general browsing (/packages)
+          - Includes "View All Kashmir Packages" button linking to /packages?search=kashmir
+          =================================================================== */}
+      {!loading && !error && !searchQuery && selectedCategory === "all" && kashmirTours.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-2">
+          <div className="bg-gradient-to-br from-[#082B50]/5 via-amber-500/5 to-transparent rounded-3xl p-6 sm:p-8 border border-[#E5EAF1] shadow-xs">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 sm:mb-8">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F15A24]/10 text-[#F15A24] text-xs font-bold mb-2">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Handcrafted Winter Specials • December 2026</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-black font-display text-[#082B50] tracking-tight">
+                  Kashmir Winter Tour Packages
+                </h2>
+                <p className="text-xs sm:text-sm text-[#64748B] mt-1 max-w-2xl leading-relaxed">
+                  Glide on shikaras across Dal Lake, take the high-altitude Gulmarg Gondola over snowy pines, and explore Sonamarg glaciers & Pahalgam valleys.
+                </p>
+              </div>
+              <Link
+                href="/packages?search=kashmir"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#082B50] hover:bg-[#F15A24] text-white text-xs font-bold transition-all shadow-xs self-start md:self-auto cursor-pointer"
+              >
+                <span>View All Kashmir Packages</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+              {kashmirTours.map((tour) => renderTourCard(tour, "Featured Kashmir Section"))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ===================================================================
           3. MAIN CONTENT: PACKAGE CARDS GRID & STATES
           - 4 States: Loading, Error, Empty, and Success Grid (3 Desktop, 2 Tablet, 1 Mobile)
           =================================================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+        {/* Section Heading */}
+        {!loading && !error && filteredTours.length > 0 && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6 sm:mb-8">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black text-[#082B50] font-display">
+                {searchQuery ? `Search Results for "${searchQuery}"` : "All Tour Packages"}
+              </h2>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                Showing {filteredTours.length} verified {filteredTours.length === 1 ? "package" : "packages"}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* 1. LOADING STATE: Skeleton Cards */}
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
@@ -372,136 +589,7 @@ function TourPackagesContent() {
         {/* 4. SUCCESS STATE: Responsive Card Grid (Desktop: 3, Tablet: 2, Mobile: 1) */}
         {!loading && !error && filteredTours.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
-            {filteredTours.map((tour) => {
-              const destinationName = tour.destination?.name || tour.state || "India";
-              const hasDiscount =
-                tour.discounted_price !== null &&
-                tour.discounted_price !== undefined &&
-                Number(tour.discounted_price) > 0 &&
-                Number(tour.discounted_price) < Number(tour.price);
-
-              const discountPercent = hasDiscount
-                ? Math.round(
-                    ((Number(tour.price) - Number(tour.discounted_price)) /
-                      Number(tour.price)) *
-                      100
-                  )
-                : 0;
-
-              const displayPrice = hasDiscount ? tour.discounted_price : tour.price;
-
-              return (
-                <article
-                  key={tour.id}
-                  className="bg-white rounded-2xl border border-[#E5EAF1] shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col overflow-hidden group"
-                >
-                  {/* Tour Cover Image (100% Dynamic from Backend) */}
-                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 flex-shrink-0">
-                    {tour.cover_image ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src={tour.cover_image}
-                        alt={tour.name}
-                        loading="lazy"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 p-4 text-center">
-                        <Compass className="w-8 h-8 text-slate-400 mb-2" />
-                        <span className="text-xs font-semibold text-slate-500">
-                          {tour.name}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Top Badges (100% Dynamic from Backend) */}
-                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
-                      {hasDiscount ? (
-                        <span className="bg-[#F15A24] text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full shadow-md">
-                          {discountPercent}% OFF
-                        </span>
-                      ) : tour.category ? (
-                        <span className="bg-[#082B50]/80 backdrop-blur-xs text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-xs">
-                          {tour.category}
-                        </span>
-                      ) : (
-                        <span />
-                      )}
-
-                      <span className="bg-white/95 backdrop-blur-xs text-[#082B50] text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
-                        <ShieldCheck className="w-3 h-3 text-[#16A36A]" />
-                        <span>Verified</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Card Body (100% Dynamic from Backend) */}
-                  <div className="p-5 flex-1 flex flex-col justify-between">
-                    <div>
-                      {/* Destination & Duration Chips */}
-                      <div className="flex items-center gap-2 mb-2.5 flex-wrap">
-                        {destinationName && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#082B50] bg-[#EAF6FC] px-2.5 py-0.5 rounded-full">
-                            <MapPin className="w-3 h-3 text-[#F15A24] flex-shrink-0" />
-                            <span className="truncate max-w-[140px]">{destinationName}</span>
-                          </span>
-                        )}
-
-                        {(tour.days || tour.nights) && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full">
-                            <Clock className="w-3 h-3 text-[#F15A24] flex-shrink-0" />
-                            <span>
-                              {tour.days} Days / {tour.nights} Nights
-                            </span>
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Package Name */}
-                      <h2 className="font-extrabold text-[#082B50] text-base group-hover:text-[#F15A24] transition-colors line-clamp-2 leading-snug">
-                        {tour.name}
-                      </h2>
-
-                      {/* Short Description */}
-                      {(tour.short_description || tour.description) && (
-                        <p className="text-xs text-[#64748B] mt-2 line-clamp-2 leading-relaxed">
-                          {tour.short_description || tour.description}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Pricing and Action Row */}
-                    <div className="mt-5 pt-3.5 border-t border-[#E5EAF1] flex items-center justify-between gap-3">
-                      <div>
-                        <span className="text-[10px] text-slate-400 block font-medium uppercase tracking-wider">
-                          Starting Price
-                        </span>
-                        <div className="flex items-baseline gap-1.5 mt-0.5">
-                          <span className="text-lg font-black text-[#082B50]">
-                            {formatCurrency(displayPrice)}
-                          </span>
-                          {hasDiscount && (
-                            <span className="text-xs text-slate-400 line-through">
-                              {formatCurrency(tour.price)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* View Details / Enquire Button */}
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEnquiry(tour.name)}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#082B50] hover:bg-[#F15A24] text-white text-xs font-bold transition-all shadow-xs group/btn cursor-pointer"
-                      >
-                        <span>View Details</span>
-                        <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
+            {filteredTours.map((tour) => renderTourCard(tour))}
           </div>
         )}
       </section>
@@ -511,7 +599,11 @@ function TourPackagesContent() {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         defaultDestination={selectedTourName}
+        packageInfo={selectedPackageInfo}
       />
+
+      {/* Mobile Sticky Bottom Action Bar with Enquiry Trigger */}
+      <MobileBottomBar onOpenEnquiry={() => handleOpenEnquiry("Custom Domestic Holiday")} />
     </>
   );
 }
@@ -543,9 +635,6 @@ export default function TourPackagesPage() {
 
       {/* Floating WhatsApp & Call Buttons */}
       <FloatingContact />
-
-      {/* Mobile Sticky Bottom Action Bar */}
-      <MobileBottomBar />
     </div>
   );
 }

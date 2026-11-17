@@ -17,13 +17,25 @@ import Footer from "@/components/shared/Footer";
 import EnquiryModal from "@/components/shared/EnquiryModal";
 import FloatingContact from "@/components/shared/FloatingContact";
 import MobileBottomBar from "@/components/shared/MobileBottomBar";
+import { EnquiryPackageInfo } from "@/types/lead";
 
 export default function Home() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedDestination, setSelectedDestination] = useState("Jammu & Kashmir");
+  const [packageInfo, setPackageInfo] = useState<EnquiryPackageInfo | undefined>(undefined);
 
-  const handleOpenEnquiry = (destination?: string) => {
-    if (destination) setSelectedDestination(destination);
+  const handleOpenEnquiry = (destinationOrInfo?: string | EnquiryPackageInfo) => {
+    if (typeof destinationOrInfo === "string") {
+      setSelectedDestination(destinationOrInfo);
+      setPackageInfo({
+        destinationName: destinationOrInfo,
+        sourcePage: "Homepage",
+        sourceCta: "General Enquiry CTA",
+      });
+    } else if (destinationOrInfo && typeof destinationOrInfo === "object") {
+      setSelectedDestination(destinationOrInfo.destinationName || destinationOrInfo.tourName || "Kashmir");
+      setPackageInfo(destinationOrInfo);
+    }
     setModalOpen(true);
   };
 
@@ -75,6 +87,7 @@ export default function Home() {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         defaultDestination={selectedDestination}
+        packageInfo={packageInfo}
       />
 
       {/* Floating WhatsApp & Call Buttons (Desktop & Tablet) */}

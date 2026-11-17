@@ -7,9 +7,10 @@ import { ChevronLeft, ChevronRight, ArrowRight, Clock, Star } from "lucide-react
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { formatCurrency } from "@/lib/utils";
+import { EnquiryPackageInfo } from "@/types/lead";
 
 interface PopularPackagesProps {
-  onSelectPackage?: (packageName: string) => void;
+  onSelectPackage?: (pkg: string | EnquiryPackageInfo) => void;
 }
 
 interface PackageItem {
@@ -157,9 +158,18 @@ export default function PopularPackages({ onSelectPackage }: PopularPackagesProp
     }
   };
 
-  const handleCardClick = (dest: string) => {
+  const handleCardClick = (pkg: PackageItem) => {
     if (onSelectPackage) {
-      onSelectPackage(dest);
+      const numericPrice = typeof pkg.price === "string" ? parseFloat(pkg.price.replace(/[^\d.]/g, "")) : undefined;
+      onSelectPackage({
+        tourId: typeof pkg.id === "string" ? pkg.id : null,
+        tourName: pkg.title,
+        destinationName: pkg.destination,
+        packagePrice: isNaN(numericPrice as number) ? null : numericPrice,
+        packageImage: pkg.image,
+        sourcePage: "Homepage",
+        sourceCta: "Popular Package Card",
+      });
     }
   };
 
@@ -225,7 +235,7 @@ export default function PopularPackages({ onSelectPackage }: PopularPackagesProp
               {packages.map((pkg) => (
                 <div
                   key={pkg.id}
-                  onClick={() => handleCardClick(pkg.destination)}
+                  onClick={() => handleCardClick(pkg)}
                   className="flex-shrink-0 w-[240px] sm:w-[260px] snap-start bg-white rounded-xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 overflow-hidden flex flex-col group cursor-pointer"
                 >
                   {/* Package Image */}
