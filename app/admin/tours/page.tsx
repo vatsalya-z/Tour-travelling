@@ -513,17 +513,7 @@ export default function AdminToursPage() {
 
                   {/* Bottom row: Action Buttons */}
                   <div className="flex items-center justify-between gap-2 pt-1">
-                    {/* View Live Page */}
-                    {tour.slug ? (
-                      <Link
-                        href={`/packages/${tour.slug}`}
-                        target="_blank"
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#E5EAF1] bg-white hover:bg-slate-50 text-xs font-semibold text-[#082B50]"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5 text-[#F04B16]" />
-                        <span>Live Page</span>
-                      </Link>
-                    ) : <div />}
+                    
 
                     <div className="flex items-center gap-2">
                       <Link

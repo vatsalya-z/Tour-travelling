@@ -13,8 +13,8 @@ import {
 
 export default function TopBar() {
   return (
-    <div className="bg-[#082B50] text-slate-200 text-xs py-2 px-4 border-b border-[#123F68]/40">
-      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+    <div className="hidden md:block bg-[#082B50] text-slate-200 text-xs py-2 px-4 border-b border-[#123F68]/40">
+      <div className="max-w-7xl mx-auto flex justify-between items-center gap-2">
         {/* Left Side: Agency Status & States */}
         <div className="flex items-center gap-2 font-medium">
           <FaLocationDot className="w-3.5 h-3.5 text-[#F15A24] flex-shrink-0" />

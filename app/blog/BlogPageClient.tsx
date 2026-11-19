@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
-import { Search, Compass, BookOpen, RefreshCw } from "lucide-react";
+import Link from "next/link";
+import { Search, Compass, BookOpen, RefreshCw, ArrowRight } from "lucide-react";
 import TopBar from "@/components/shared/TopBar";
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
@@ -71,50 +72,59 @@ export default function BlogPageClient() {
       <Header />
 
       <main className="flex-1">
-        {/* Blog Header / Hero with Scenic Background Image */}
-        <section className="relative w-full sm:h-[600px] py-12 sm:py-16 md:py-20 lg:py-24 text-white overflow-hidden">
-          {/* Background Image & Overlay */}
-          <div className="absolute inset-0 ">
+        {/* Blog Header / Hero Banner - 100% Full Width Panoramic */}
+        <section className="relative w-full min-h-[360px] sm:min-h-[460px] md:min-h-[520px] lg:min-h-[580px] flex items-center justify-center py-16 sm:py-24 md:py-28 lg:py-32 text-white overflow-hidden bg-[#082B50]">
+          {/* Background Image & High Contrast Gradient Overlay (100% Full Width Edge-to-Edge) */}
+          <div className="absolute inset-0 w-full h-full">
             <Image
               src="/images/blogs/blog-hero-banner.webp"
               alt="Incredible India Travel Journal"
               fill
               priority
               sizes="100vw"
-              className="object-cover object-center"
+              className="object-cover object-center w-full h-full select-none"
             />
-            {/* Dark gradient overlay for high contrast, legibility and elegance */}
+            {/* Cinematic dark gradient overlay for crystal clear contrast & legibility across 100% full width */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#082B50] via-[#082B50]/75 to-black/55" />
           </div>
 
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center relative z-10 flex flex-col items-center">
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 flex flex-col items-center">
             {/* Small Label */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-white text-[11px] sm:text-xs font-bold tracking-wider uppercase mb-3 sm:mb-4 border border-white/20 shadow-xs">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-white text-[11px] sm:text-xs font-bold tracking-wider uppercase mb-4 sm:mb-5 border border-white/20 shadow-xs">
               <Compass className="w-3.5 h-3.5 text-[#F15A24]" />
               <span>TOURTRIPHOLIDAYS TRAVEL JOURNAL</span>
             </div>
 
-            {/* Main Heading (Centered & Mobile Responsive) */}
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-[1.2] max-w-3xl">
+            {/* Main Heading (Full Width Expansive & Centered) */}
+            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.15] w-full max-w-5xl">
               Incredible India, <span className="text-[#F15A24]">Story by Story</span>
             </h1>
 
-            {/* Subtitle (Centered & Mobile Responsive) */}
-            <p className="mt-3 sm:mt-4 text-xs sm:text-base md:text-lg text-slate-200 font-medium max-w-2xl mx-auto leading-relaxed">
-              Explore authentic travel guides, seasonal packing tips, regional traditions, and thoughtfully crafted domestic itineraries across India.
+            {/* Subtitle (Full Width & Centered) */}
+            <p className="mt-4 sm:mt-6 text-sm sm:text-lg md:text-xl lg:text-2xl text-slate-100 font-medium w-full max-w-4xl mx-auto leading-relaxed">
+              Explore authentic travel guides, seasonal packing tips, regional traditions, and thoughtfully crafted domestic itineraries across all 28 states of India.
             </p>
-
-            {/* Search Input Bar (Centered & Full Width on mobile up to max-w-xl) */}
-           
           </div>
         </section>
 
         {/* Category Filter Pills & Content Section */}
-        <section className="py-8 sm:py-12 md:py-14 bg-[#F5F8FC]">
-          <div className="max-w-7xl mx-auto px-3 sm:px-6">
-            {/* Category Filter Pills (Mobile Scrollable) */}
-            
+        <section className="py-10 sm:py-14 md:py-18 bg-[#F5F8FC]">
+          <div className="max-w-7xl mx-auto px-3.5 sm:px-6">
+            {/* Section Header - Centered for both mobile & desktop */}
+            <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EAF6FC] text-[#082B50] text-xs font-bold uppercase tracking-wider mb-3 border border-[#DCEAF3]">
+                <Compass className="w-3.5 h-3.5 text-[#F15A24]" />
+                <span>TRAVEL STORIES & INSPIRATION</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#082B50] tracking-tight">
+                Authentic Glimpses of <span className="text-[#F15A24]">India</span>
+              </h2>
+              <p className="mt-2 text-slate-600 text-xs sm:text-base font-medium max-w-2xl mx-auto">
+                Handcrafted travel highlights, cultural insights, and inspiring destination stories from across Incredible India.
+              </p>
+            </div>
 
-            {/* Articles Grid (2 cols mobile, 2 cols tablet, 3 cols desktop) */}
+            {/* Mobile Responsive Grid: 2 columns on mobile, 2 cols on tablet, 3 cols on desktop */}
             {loading ? (
               <div className="py-16 sm:py-20 text-center text-xs text-slate-500">
                 <RefreshCw className="w-7 h-7 sm:w-8 sm:h-8 text-[#082B50] animate-spin mx-auto mb-3" />
@@ -151,6 +161,17 @@ export default function BlogPageClient() {
                 ))}
               </div>
             )}
+
+            {/* Centered CTA Button Below Section (Mobile & Desktop) */}
+            <div className="mt-10 sm:mt-14 text-center">
+              <Link
+                href="/packages"
+                className="inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full bg-[#082B50] hover:bg-[#F15A24] text-white text-sm sm:text-base font-bold shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer"
+              >
+                <span>Explore All Tour Packages</span>
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1.5 transition-transform" />
+              </Link>
+            </div>
           </div>
         </section>
       </main>

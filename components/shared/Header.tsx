@@ -300,15 +300,7 @@ export default function Header() {
 
           {/* Mobile Hamburger Button */}
           <div className="flex items-center gap-2 lg:hidden">
-            <a
-              href="https://wa.me/919876543210"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="sm:hidden p-2 text-[#25D366] hover:bg-green-50 rounded-lg flex items-center justify-center"
-              aria-label="WhatsApp"
-            >
-              <FaWhatsapp className="w-6 h-6 text-[#25D366]" />
-            </a>
+           
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 text-[#082B50] hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"

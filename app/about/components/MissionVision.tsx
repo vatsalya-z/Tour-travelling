@@ -24,39 +24,39 @@ export default function MissionVision({ data }: MissionVisionProps) {
           </h2>
         </div>
 
-        {/* Two Clean Content Blocks */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+        {/* Two Clean Content Blocks (2 cols mobile, 2 cols desktop) */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-6 lg:gap-8">
           {/* Mission Block */}
-          <div className="bg-[#F5F8FC] rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-10 border border-[#DCEAF3] hover:border-[#F15A24]/40 transition-colors shadow-xs flex flex-col justify-between">
+          <div className="bg-[#F5F8FC] rounded-xl sm:rounded-3xl p-3.5 sm:p-8 lg:p-10 border border-[#DCEAF3] hover:border-[#F15A24]/40 transition-colors shadow-xs flex flex-col justify-between h-full">
             <div>
-              <div className="w-12 h-12 rounded-xl bg-white border border-[#DCEAF3] flex items-center justify-center text-[#F15A24] mb-5 shadow-xs">
-                <Target className="w-6 h-6" />
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-white border border-[#DCEAF3] flex items-center justify-center text-[#F15A24] mb-3 sm:mb-5 shadow-xs shrink-0">
+                <Target className="w-4 h-4 sm:w-6 sm:h-6" />
               </div>
-              <span className="text-xs font-bold uppercase tracking-wider text-[#F15A24]">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#F15A24]">
                 OUR MISSION
               </span>
-              <h3 className="text-xl sm:text-2xl font-extrabold text-[#082B50] mt-1 mb-3">
+              <h3 className="text-xs sm:text-xl lg:text-2xl font-extrabold text-[#082B50] mt-0.5 sm:mt-1 mb-1.5 sm:mb-3 leading-snug">
                 {data.mission_title}
               </h3>
-              <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+              <p className="text-slate-600 text-[11px] sm:text-base leading-snug sm:leading-relaxed line-clamp-4 sm:line-clamp-none">
                 {data.mission_desc}
               </p>
             </div>
           </div>
 
           {/* Vision Block */}
-          <div className="bg-[#F5F8FC] rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-10 border border-[#DCEAF3] hover:border-[#F15A24]/40 transition-colors shadow-xs flex flex-col justify-between">
+          <div className="bg-[#F5F8FC] rounded-xl sm:rounded-3xl p-3.5 sm:p-8 lg:p-10 border border-[#DCEAF3] hover:border-[#F15A24]/40 transition-colors shadow-xs flex flex-col justify-between h-full">
             <div>
-              <div className="w-12 h-12 rounded-xl bg-white border border-[#DCEAF3] flex items-center justify-center text-[#082B50] mb-5 shadow-xs">
-                <Compass className="w-6 h-6 text-[#082B50]" />
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-white border border-[#DCEAF3] flex items-center justify-center text-[#082B50] mb-3 sm:mb-5 shadow-xs shrink-0">
+                <Compass className="w-4 h-4 sm:w-6 sm:h-6 text-[#082B50]" />
               </div>
-              <span className="text-xs font-bold uppercase tracking-wider text-[#082B50]">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#082B50]">
                 OUR VISION
               </span>
-              <h3 className="text-xl sm:text-2xl font-extrabold text-[#082B50] mt-1 mb-3">
+              <h3 className="text-xs sm:text-xl lg:text-2xl font-extrabold text-[#082B50] mt-0.5 sm:mt-1 mb-1.5 sm:mb-3 leading-snug">
                 {data.vision_title}
               </h3>
-              <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+              <p className="text-slate-600 text-[11px] sm:text-base leading-snug sm:leading-relaxed line-clamp-4 sm:line-clamp-none">
                 {data.vision_desc}
               </p>
             </div>

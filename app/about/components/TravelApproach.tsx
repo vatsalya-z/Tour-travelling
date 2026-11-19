@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { CheckCircle2, Compass, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Compass } from "lucide-react";
 import { AboutTravelApproachSection } from "@/types/about";
 
 interface TravelApproachProps {
@@ -78,6 +79,17 @@ export default function TravelApproach({ data }: TravelApproachProps) {
               );
             })}
           </div>
+        </div>
+
+        {/* Centered CTA Button Below Process Steps */}
+        <div className="mt-12 sm:mt-16 text-center">
+          <Link
+            href="/packages"
+            className="inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full bg-[#F15A24] hover:bg-[#d94815] text-white text-sm sm:text-base font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 group"
+          >
+            <span>Explore Tour Packages</span>
+            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
       </div>
     </section>

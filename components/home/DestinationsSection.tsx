@@ -21,11 +21,6 @@ interface DestinationCardItem {
 export default function DestinationsSection({ onSelectDestination }: DestinationsSectionProps) {
   const defaultDestinations: DestinationCardItem[] = [
     {
-      name: "Jammu & Kashmir",
-      image: "/images/destinations/kashmir.jpg",
-      destinationValue: "Jammu & Kashmir",
-    },
-    {
       name: "Himachal Pradesh",
       image: "/images/destinations/himachal.jpg",
       destinationValue: "Himachal Pradesh (Manali / Shimla)",

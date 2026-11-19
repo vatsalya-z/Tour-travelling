@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 interface HeroSectionProps {
   onOpenEnquiry?: () => void;
@@ -11,35 +12,20 @@ interface HeroSectionProps {
 export default function HeroSection({ onOpenEnquiry }: HeroSectionProps) {
   return (
     <section className="relative w-full overflow-hidden bg-white">
-      {/* 
-        ===================================================================
-        1. DESKTOP / TABLET HERO BANNER (Screens >= 640px)
-        - Uses the master high-resolution 2170x725 image uploaded by user.
-        - Spans 100% full viewport width with razor-sharp clarity.
-        - Perfectly preserves the 2170:725 (2.99:1) grand landscape aspect ratio.
-        ===================================================================
-      */}
+      {/* Hidden semantic heading for SEO & Accessibility */}
+      <div className="sr-only">
+        <h1>Explore India with TourTripHolidays</h1>
+        <p>Domestic Tour Packages for All 28 States of India</p>
+      </div>
       <div className="hidden sm:block relative w-full aspect-[2170/725]">
-        <picture>
-          <source
-            srcSet="/images/hero/hero-desktop.webp"
-            type="image/webp"
-          />
-          <Image
-            src="/images/hero/hero-desktop.png"
-            alt="Explore India with TourTripHolidays - Domestic Tour Packages for All 28 States of India"
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover object-center w-full h-full select-none"
-          />
-        </picture>
-
-        {/* 
-          Interactive CTA Button Overlay (Desktop):
-          Positioned directly over 'Plan Your Trip Today →'
-          x: ~9.9% to 28.3%, y: ~75.8% to 86.2%
-        */}
+        <Image
+          src="/images/hero/hero-desktop.png"
+          alt="Explore India with TourTripHolidays - Domestic Tour Packages for All 28 States of India"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center w-full h-full select-none"
+        />
         <div
           className="absolute z-20 cursor-pointer"
           style={{
@@ -81,35 +67,31 @@ export default function HeroSection({ onOpenEnquiry }: HeroSectionProps) {
         - Custom mobile composition (800x960, ~0.83 aspect ratio).
         - Prominently showcases Dal lake, snow mountains, traveler and
           clear legible typography + CTA button designed for mobile viewports.
+        - Uses direct <Image> with priority (eliminating invalid <picture> wrap).
+        - Interactive, accessible, tap-responsive CTA button centered at bottom.
         ===================================================================
       */}
       <div className="block sm:hidden relative w-full aspect-[800/960]">
-        <picture>
-          <source
-            srcSet="/images/hero/hero-mobile.webp"
-            type="image/webp"
-          />
-          <Image
-            src="/images/hero/hero-mobile.png"
-            alt="Explore India with TourTripHolidays - Mobile Travel Banner"
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover object-top w-full h-full select-none"
-          />
-        </picture>
+        <Image
+          src="/images/hero/hero-mobile.png"
+          alt="Explore India with TourTripHolidays - Mobile Travel Banner"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-top w-full h-full select-none"
+        />
 
         {/* 
           Interactive CTA Button Overlay (Mobile):
-          x: 28.7%, y: 90.1%, width: 42.5%, height: 6.3%
+          x: 20% to 80% (centered pill matching the artwork), bottom: 4.5%, height: 6.5%
         */}
         <div
-          className="absolute z-20 cursor-pointer"
+          className="absolute z-20"
           style={{
-            left: "28.7%",
-            top: "90.1%",
-            width: "42.5%",
-            height: "6.3%",
+            left: "20%",
+            right: "20%",
+            bottom: "4.5%",
+            height: "6.5%",
           }}
         >
           {onOpenEnquiry ? (
@@ -118,16 +100,18 @@ export default function HeroSection({ onOpenEnquiry }: HeroSectionProps) {
               onClick={onOpenEnquiry}
               title="Plan Your Trip Today"
               aria-label="Plan Your Trip Today"
-              className="w-full h-full rounded-full cursor-pointer focus:outline-none active:scale-95 transition-transform group"
+              className="w-full h-full rounded-full bg-gradient-to-r from-[#F15A24] to-[#FF6B2B] hover:from-[#d94815] hover:to-[#f05a18] text-white text-xs font-bold shadow-lg shadow-orange-500/40 flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer border border-white/20"
             >
-              <span className="absolute inset-0 rounded-full bg-white/0 active:bg-white/30 transition-colors" />
+              <span>Plan Your Trip Today</span>
+              <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
             </button>
           ) : (
             <Link
               href="#packages"
-              className="block w-full h-full rounded-full active:scale-95 transition-transform"
+              className="w-full h-full rounded-full bg-gradient-to-r from-[#F15A24] to-[#FF6B2B] hover:from-[#d94815] hover:to-[#f05a18] text-white text-xs font-bold shadow-lg shadow-orange-500/40 flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer border border-white/20"
             >
-              <span className="absolute inset-0 rounded-full bg-white/0 active:bg-white/30 transition-colors" />
+              <span>Plan Your Trip Today</span>
+              <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
             </Link>
           )}
         </div>

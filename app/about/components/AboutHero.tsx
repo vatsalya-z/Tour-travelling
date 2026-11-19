@@ -49,23 +49,10 @@ export default function AboutHero({ data }: AboutHeroProps) {
             {data.description}
           </p>
         )}
-
-        {/* Centered CTA Button directly below content */}
-        {data.cta_text && (
-          <div className="mt-7 sm:mt-8 flex justify-center">
-            <Link
-              href={data.cta_link || "/packages"}
-              className="inline-flex items-center gap-2.5 bg-[#F15A24] hover:bg-[#d94815] text-white font-bold text-sm sm:text-base px-8 py-3.5 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 group cursor-pointer"
-            >
-              <span>{data.cta_text}</span>
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-        )}
       </div>
 
       {/* Responsive Original Travel Photography Showcase */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 mt-10 sm:mt-14">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 mt-10 sm:mt-12">
         <div className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-[#DCEAF3] shadow-md bg-slate-100">
           {/* Desktop Image (16:9 Landscape) */}
           <div className="hidden sm:block relative w-full aspect-[16/9]">
@@ -96,6 +83,19 @@ export default function AboutHero({ data }: AboutHeroProps) {
           </div>
         </div>
       </div>
+
+      {/* Centered CTA Button directly below section showcase */}
+      {data.cta_text && (
+        <div className="mt-8 sm:mt-12 flex justify-center px-4">
+          <Link
+            href={data.cta_link || "/packages"}
+            className="inline-flex items-center gap-2.5 bg-[#F15A24] hover:bg-[#d94815] text-white font-bold text-sm sm:text-base px-8 py-3.5 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 group cursor-pointer"
+          >
+            <span>{data.cta_text}</span>
+            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </div>
+      )}
     </section>
   );
 }

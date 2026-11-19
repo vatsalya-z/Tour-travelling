@@ -26,30 +26,30 @@ export default function WhyChooseUs({ data }: WhyChooseUsProps) {
           </h2>
         </div>
 
-        {/* 4 Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* 4 Cards Grid (2 cols mobile, 2 cols tablet, 4 cols desktop) */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {data.features.map((feature, idx) => {
             const Icon = icons[idx % icons.length];
             return (
               <div
                 key={idx}
-                className="bg-white rounded-2xl p-6 border border-[#DCEAF3] hover:border-[#F15A24]/40 hover:shadow-md transition-all flex flex-col justify-between"
+                className="bg-white rounded-xl sm:rounded-2xl p-3.5 sm:p-6 border border-[#DCEAF3] hover:border-[#F15A24]/40 hover:shadow-md transition-all flex flex-col justify-between h-full"
               >
                 <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-11 h-11 rounded-xl bg-[#EAF6FC] flex items-center justify-center text-[#F15A24]">
-                      <Icon className="w-5 h-5" />
+                  <div className="flex items-center justify-between mb-2.5 sm:mb-4 gap-1">
+                    <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-[#EAF6FC] flex items-center justify-center text-[#F15A24] shrink-0">
+                      <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                     {feature.tag && (
-                      <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#EAF6FC] text-[#082B50] border border-[#DCEAF3]">
+                      <span className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-[#EAF6FC] text-[#082B50] border border-[#DCEAF3] truncate">
                         {feature.tag}
                       </span>
                     )}
                   </div>
-                  <h3 className="text-lg font-bold text-[#082B50] mb-2">
+                  <h3 className="text-xs sm:text-lg font-bold text-[#082B50] mb-1 sm:mb-2 leading-snug">
                     {feature.title}
                   </h3>
-                  <p className="text-slate-600 text-sm leading-relaxed">
+                  <p className="text-slate-600 text-[11px] sm:text-sm leading-snug sm:leading-relaxed line-clamp-3 sm:line-clamp-none">
                     {feature.description}
                   </p>
                 </div>

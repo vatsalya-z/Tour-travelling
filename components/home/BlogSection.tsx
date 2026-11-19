@@ -138,28 +138,18 @@ export default function BlogSection() {
   return (
     <section className="py-12 sm:py-16 md:py-20 bg-white border-t border-[#DCEAF3]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 sm:mb-12 gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAF6FC] text-[#082B50] text-xs font-bold uppercase tracking-wider mb-3 border border-[#DCEAF3]">
-              <Compass className="w-3.5 h-3.5 text-[#F15A24]" />
-              <span>TRAVEL STORIES & INSPIRATION</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#082B50] tracking-tight">
-              Latest Travel <span className="text-[#F15A24]">Journals</span>
-            </h2>
-            <p className="mt-2 text-slate-600 text-sm sm:text-base font-medium max-w-xl">
-              Authentic glimpses and inspiring destination highlights from across Incredible India.
-            </p>
+        {/* Section Header - Centered for both mobile & desktop */}
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EAF6FC] text-[#082B50] text-xs font-bold uppercase tracking-wider mb-3 border border-[#DCEAF3]">
+            <Compass className="w-3.5 h-3.5 text-[#F15A24]" />
+            <span>TRAVEL STORIES & INSPIRATION</span>
           </div>
-
-          <Link
-            href="/blog"
-            className="inline-flex items-center gap-2 text-sm font-bold text-[#F15A24] hover:text-[#d94815] transition-colors group self-start md:self-auto"
-          >
-            <span>Explore All Blogs</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#082B50] tracking-tight">
+            Latest Travel <span className="text-[#F15A24]">Journals</span>
+          </h2>
+          <p className="mt-2 text-slate-600 text-sm sm:text-base font-medium max-w-2xl mx-auto">
+            Authentic glimpses and inspiring destination highlights from across Incredible India.
+          </p>
         </div>
 
         {/* 6 Blog Cards Grid: Only Image & Heading */}
@@ -195,6 +185,17 @@ export default function BlogSection() {
               </div>
             </article>
           ))}
+        </div>
+
+        {/* Explore All Blogs CTA - Centered Below Section for both mobile & desktop */}
+        <div className="mt-10 sm:mt-12 text-center">
+          <Link
+            href="/blog"
+            className="inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full bg-[#082B50] hover:bg-[#F15A24] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all duration-300 group"
+          >
+            <span>Explore All Blogs</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
+          </Link>
         </div>
       </div>
     </section>
