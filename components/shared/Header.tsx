@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Logo from "./Logo";
-import { ChevronDown, Menu, X, User as UserIcon, LogOut, LayoutDashboard } from "lucide-react";
+import { ChevronDown, Menu, X, User as UserIcon, LogOut, LayoutDashboard, FileText } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa6";
 import AuthModal from "./AuthModal";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -252,6 +252,16 @@ export default function Header() {
                         </span>
                       )}
                     </div>
+                    {/* My Enquiries (Desktop) */}
+                    <Link
+                      href="/my-enquiries"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-[#082B50] hover:bg-[#EAF6FC] hover:text-[#F15A24] transition-colors"
+                    >
+                      <FileText className="w-4 h-4 text-[#F15A24]" />
+                      <span>My Enquiries</span>
+                    </Link>
+
                     {isAdmin && (
                       <Link
                         href="/admin"
@@ -446,6 +456,16 @@ export default function Header() {
                         <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
                       </div>
                     </div>
+                    {/* My Enquiries (Mobile) */}
+                    <Link
+                      href="/my-enquiries"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center justify-center gap-2 w-full py-2 bg-[#EAF6FC] text-[#082B50] text-xs font-bold rounded-lg border border-sky-100"
+                    >
+                      <FileText className="w-4 h-4 text-[#F15A24]" />
+                      <span>My Enquiries</span>
+                    </Link>
+
                     {isAdmin && (
                       <Link
                         href="/admin"

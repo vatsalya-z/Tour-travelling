@@ -28,6 +28,8 @@ import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Tour } from "@/types/tour";
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function AdminToursPage() {
   const [tours, setTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +69,9 @@ export default function AdminToursPage() {
       const json = await res.json();
 
       if (json.success && Array.isArray(json.data)) {
-        const mapped = json.data.map((t: any) => ({
+        // Exclude any mock/invalid UUID items from admin tour management
+        const validItems = json.data.filter((t: any) => t.id && UUID_REGEX.test(t.id));
+        const mapped = validItems.map((t: any) => ({
           ...t,
           state: t.destination?.state || t.state || "",
           destination: t.destination ? { name: t.destination.name } : undefined,
@@ -101,7 +105,8 @@ export default function AdminToursPage() {
           .order("created_at", { ascending: false });
 
         if (data) {
-          const mapped = data.map((t: any) => ({
+          const validData = data.filter((t: any) => t.id && UUID_REGEX.test(t.id));
+          const mapped = validData.map((t: any) => ({
             ...t,
             state: t.destinations?.state || t.state || "",
             destination: t.destinations ? { name: t.destinations.name } : undefined,
@@ -122,8 +127,16 @@ export default function AdminToursPage() {
 
   // Handle Quick Status Toggle (Published <-> Draft)
   const handleToggleStatus = async (tour: Tour) => {
-    if (!isConfigured) return;
     const newStatus = tour.status === "published" ? "draft" : "published";
+
+    if (!UUID_REGEX.test(tour.id)) {
+      setTours((prev) =>
+        prev.map((t) => (t.id === tour.id ? { ...t, status: newStatus } : t))
+      );
+      return;
+    }
+
+    if (!isConfigured) return;
     setIsUpdatingStatus(tour.id);
 
     try {
@@ -162,7 +175,17 @@ export default function AdminToursPage() {
 
   // Execute Tour Deletion
   const handleDeleteConfirm = async () => {
-    if (!tourToDelete || !isConfigured) return;
+    if (!tourToDelete) return;
+
+    // If ID is not a valid UUID (mock/legacy tour), remove immediately from UI
+    if (!UUID_REGEX.test(tourToDelete.id)) {
+      setTours((prev) => prev.filter((t) => t.id !== tourToDelete.id));
+      setDeleteModalOpen(false);
+      setTourToDelete(null);
+      return;
+    }
+
+    if (!isConfigured) return;
     setIsDeleting(true);
 
     try {
@@ -235,44 +258,36 @@ export default function AdminToursPage() {
 
   return (
     <div className="space-y-6 font-sans">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-[#082B50] font-display">
+      {/* Page Header - Centered on Mobile, Unchanged on Desktop */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-center sm:text-left">
+        <div className="w-full sm:w-auto">
+          <h1 className="text-xl sm:text-2xl font-bold text-[#082B50] font-display text-center sm:text-left">
             Tour Management
           </h1>
-          <p className="text-xs text-[#64748B] mt-0.5">
+          <p className="text-xs text-[#64748B] mt-1 text-center sm:text-left max-w-lg mx-auto sm:mx-0">
             Manage your domestic tour catalog, inventory, pricing, and live status.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={fetchTours}
-            disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-[#E5EAF1] hover:bg-[#F5F8FC] text-xs font-medium text-[#172B4D] cursor-pointer"
-            title="Refresh Catalog"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 text-[#64748B] ${loading ? "animate-spin" : ""}`} />
-            <span>Refresh</span>
-          </button>
+        <div className="flex items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
+          
 
           <Link
             href="/admin/tours/create"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#F04B16] hover:bg-[#d94012] text-white text-xs font-semibold shadow-xs transition-all"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-[#F04B16] hover:bg-[#d94012] text-white text-xs font-semibold shadow-xs transition-all active:scale-95"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Add New Tour</span>
+            <span> Add New Tour</span>
           </Link>
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="bg-white rounded-xl border border-[#E5EAF1] p-4 shadow-xs">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
+      {/* Filter and Search Bar - Mobile Optimized, Desktop Preserved */}
+      <div className="bg-white rounded-xl border border-[#E5EAF1] p-3.5 sm:p-4 shadow-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5 sm:gap-3">
           {/* Search Field */}
           <div className="lg:col-span-4 relative">
-            <Search className="w-3.5 h-3.5 text-[#94A3B8] absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#94A3B8] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               placeholder="Search by tour name, state..."
@@ -281,43 +296,58 @@ export default function AdminToursPage() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-9 pr-3 py-2 text-xs bg-[#F5F8FC] border border-[#E5EAF1] rounded-lg text-[#172B4D] placeholder-[#94A3B8] focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-[#082B50]/20 focus:border-[#082B50] transition-all"
+              className="w-full pl-9 pr-8 py-2.5 sm:py-2 text-xs sm:text-sm bg-[#F5F8FC] border border-[#E5EAF1] rounded-lg text-[#172B4D] placeholder-[#94A3B8] focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-[#082B50]/20 focus:border-[#082B50] transition-all"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery("");
+                  setCurrentPage(1);
+                }}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-colors"
+                title="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
           {/* Status Filter */}
-          <div className="lg:col-span-3">
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="w-full px-3 py-2 text-xs bg-[#F5F8FC] border border-[#E5EAF1] rounded-lg text-[#172B4D] focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-[#082B50]/20 focus:border-[#082B50] cursor-pointer"
-            >
-              <option value="all">All Statuses ({tours.length})</option>
-              <option value="published">Published Only</option>
-              <option value="draft">Drafts Only</option>
-            </select>
-          </div>
+          <div className="grid grid-cols-2 gap-2.5 sm:contents">
+            <div className="col-span-1 sm:col-span-1 lg:col-span-3">
+              <select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full px-3 py-2.5 sm:py-2 text-xs bg-[#F5F8FC] border border-[#E5EAF1] rounded-lg text-[#172B4D] focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-[#082B50]/20 focus:border-[#082B50] cursor-pointer"
+              >
+                <option value="all">All Statuses ({tours.length})</option>
+                <option value="published">Published Only</option>
+                <option value="draft">Drafts Only</option>
+              </select>
+            </div>
 
-          {/* Category Filter */}
-          <div className="lg:col-span-3">
-            <select
-              value={categoryFilter}
-              onChange={(e) => {
-                setCategoryFilter(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="w-full px-3 py-2 text-xs bg-[#F5F8FC] border border-[#E5EAF1] rounded-lg text-[#172B4D] focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-[#082B50]/20 focus:border-[#082B50] cursor-pointer"
-            >
-              <option value="all">All Categories</option>
-              {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+            {/* Category Filter */}
+            <div className="col-span-1 sm:col-span-1 lg:col-span-3">
+              <select
+                value={categoryFilter}
+                onChange={(e) => {
+                  setCategoryFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full px-3 py-2.5 sm:py-2 text-xs bg-[#F5F8FC] border border-[#E5EAF1] rounded-lg text-[#172B4D] focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-[#082B50]/20 focus:border-[#082B50] cursor-pointer"
+              >
+                <option value="all">All Categories</option>
+                {categories.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Sort By */}
@@ -325,7 +355,7 @@ export default function AdminToursPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="w-full px-3 py-2 text-xs bg-[#F5F8FC] border border-[#E5EAF1] rounded-lg text-[#172B4D] focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-[#082B50]/20 focus:border-[#082B50] cursor-pointer"
+              className="w-full px-3 py-2.5 sm:py-2 text-xs bg-[#F5F8FC] border border-[#E5EAF1] rounded-lg text-[#172B4D] focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-[#082B50]/20 focus:border-[#082B50] cursor-pointer"
             >
               <option value="newest">Sort: Newest</option>
               <option value="price-asc">Price: Low to High</option>
@@ -335,6 +365,27 @@ export default function AdminToursPage() {
           </div>
         </div>
       </div>
+
+      {/* Active Filter & Result Count Pill */}
+      {(searchQuery || statusFilter !== "all" || categoryFilter !== "all") && (
+        <div className="flex items-center justify-between text-xs text-slate-500 px-1">
+          <span>
+            Found <strong className="text-slate-800">{filteredTours.length}</strong> {filteredTours.length === 1 ? "tour package" : "tour packages"}
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setSearchQuery("");
+              setStatusFilter("all");
+              setCategoryFilter("all");
+              setCurrentPage(1);
+            }}
+            className="text-[11px] font-semibold text-[#F04B16] hover:underline cursor-pointer"
+          >
+            Reset filters
+          </button>
+        </div>
+      )}
 
       {/* Main Table Card */}
       <div className="bg-white rounded-xl border border-[#E5EAF1] shadow-xs overflow-hidden">
@@ -363,8 +414,144 @@ export default function AdminToursPage() {
             </div>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+          <>
+            {/* Mobile View: Touch-Friendly Tour Cards (< md) */}
+            <div className="block md:hidden divide-y divide-[#E5EAF1]">
+              {paginatedTours.map((tour) => (
+                <div
+                  key={tour.id}
+                  className="p-4 space-y-3 bg-white hover:bg-[#F8FAFC] transition-colors"
+                >
+                  {/* Top row: Cover Thumbnail + Title + Destination */}
+                  <div className="flex items-start gap-3">
+                    <div className="relative w-16 h-16 rounded-xl bg-[#F5F8FC] border border-[#E5EAF1] flex-shrink-0 overflow-hidden shadow-2xs">
+                      {tour.cover_image ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={tour.cover_image}
+                          alt={tour.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <MapPin className="w-5 h-5 text-[#94A3B8]" />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span className="text-[10px] font-bold text-[#F04B16] bg-[#FFF2ED] border border-[#FDDCD0] px-2 py-0.5 rounded-md uppercase tracking-wider">
+                          {tour.category || "Tour"}
+                        </span>
+                        {/* Status Toggle Button on Mobile */}
+                        <button
+                          type="button"
+                          onClick={() => handleToggleStatus(tour)}
+                          disabled={isUpdatingStatus === tour.id}
+                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                            tour.status === "published"
+                              ? "bg-[#EBF7F0] text-[#16A36A] hover:bg-[#d8f1e1]"
+                              : "bg-[#F1F5F9] text-[#64748B] hover:bg-slate-200"
+                          }`}
+                          title="Tap to toggle published / draft"
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              tour.status === "published" ? "bg-[#16A36A]" : "bg-[#94A3B8]"
+                            }`}
+                          />
+                          <span>
+                            {isUpdatingStatus === tour.id
+                              ? "..."
+                              : tour.status === "published"
+                              ? "Published"
+                              : "Draft"}
+                          </span>
+                        </button>
+                      </div>
+
+                      <Link
+                        href={`/admin/tours/${tour.id}/edit`}
+                        className="font-bold text-sm text-[#172B4D] hover:text-[#F04B16] transition-colors line-clamp-1 mt-1 block"
+                      >
+                        {tour.name}
+                      </Link>
+
+                      <div className="flex items-center gap-1.5 text-xs text-[#64748B] mt-0.5">
+                        <MapPin className="w-3 h-3 text-[#94A3B8] flex-shrink-0" />
+                        <span className="truncate">{tour.destination?.name || tour.state || "India"}</span>
+                        <span>•</span>
+                        <span className="whitespace-nowrap font-medium text-slate-700">{tour.days}D / {tour.nights}N</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Middle row: Price & Created Date */}
+                  <div className="flex items-center justify-between bg-[#F8FAFC] p-2.5 rounded-lg border border-slate-100 text-xs">
+                    <div>
+                      <span className="text-[10px] text-slate-400 block uppercase font-semibold">Package Price</span>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="font-extrabold text-[#082B50] text-sm">
+                          {formatCurrency(tour.price)}
+                        </span>
+                        {tour.discounted_price && (
+                          <span className="text-[10px] text-[#16A36A] font-semibold">
+                            (Disc: {formatCurrency(tour.discounted_price)})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      <span className="text-[10px] text-slate-400 block uppercase font-semibold">Created</span>
+                      <span className="text-[11px] text-slate-600 font-medium">
+                        {formatDate(tour.created_at)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Bottom row: Action Buttons */}
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    {/* View Live Page */}
+                    {tour.slug ? (
+                      <Link
+                        href={`/packages/${tour.slug}`}
+                        target="_blank"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#E5EAF1] bg-white hover:bg-slate-50 text-xs font-semibold text-[#082B50]"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5 text-[#F04B16]" />
+                        <span>Live Page</span>
+                      </Link>
+                    ) : <div />}
+
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/admin/tours/${tour.id}/edit`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#082B50] text-white text-xs font-semibold hover:bg-[#123F68] shadow-2xs"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>Edit</span>
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={() => openDeleteModal(tour)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#FEECEC] text-[#DC4444] text-xs font-semibold hover:bg-[#fcd7d7] cursor-pointer"
+                        title="Delete Tour"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table (hidden on mobile, visible on md and up - 100% Preserved) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
               <thead>
                 <tr className="bg-[#F8FAFC] border-b border-[#E5EAF1] text-[#64748B] font-medium">
                   <th className="py-3 px-4 w-16">Image</th>
@@ -501,46 +688,47 @@ export default function AdminToursPage() {
               </tbody>
             </table>
           </div>
-        )}
+        </>
+      )}
 
-        {/* Pagination Footer */}
-        <div className="p-4 border-t border-[#E5EAF1] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#64748B] bg-[#FAFCFF]">
-          <div>
-            Showing{" "}
-            <strong className="text-[#172B4D]">
-              {filteredTours.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}
-            </strong>{" "}
-            to{" "}
-            <strong className="text-[#172B4D]">
-              {Math.min(currentPage * itemsPerPage, filteredTours.length)}
-            </strong>{" "}
-            of <strong className="text-[#172B4D]">{filteredTours.length}</strong> tours
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-              disabled={currentPage === 1}
-              className="p-1.5 rounded-lg border border-[#E5EAF1] bg-white text-[#64748B] hover:text-[#082B50] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-              aria-label="Previous page"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-            </button>
-
-            <span className="px-3 py-1 font-semibold text-[#172B4D]">
-              Page {currentPage} of {totalPages}
-            </span>
-
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="p-1.5 rounded-lg border border-[#E5EAF1] bg-white text-[#64748B] hover:text-[#082B50] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-              aria-label="Next page"
-            >
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
+      {/* Pagination Footer */}
+      <div className="p-4 border-t border-[#E5EAF1] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#64748B] bg-[#FAFCFF] text-center sm:text-left">
+        <div className="mx-auto sm:mx-0">
+          Showing{" "}
+          <strong className="text-[#172B4D]">
+            {filteredTours.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}
+          </strong>{" "}
+          to{" "}
+          <strong className="text-[#172B4D]">
+            {Math.min(currentPage * itemsPerPage, filteredTours.length)}
+          </strong>{" "}
+          of <strong className="text-[#172B4D]">{filteredTours.length}</strong> tours
         </div>
+
+        <div className="flex items-center justify-center sm:justify-end gap-1.5">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+            disabled={currentPage === 1}
+            className="p-1.5 rounded-lg border border-[#E5EAF1] bg-white text-[#64748B] hover:text-[#082B50] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            aria-label="Previous page"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+
+          <span className="px-3 py-1 font-semibold text-[#172B4D]">
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="p-1.5 rounded-lg border border-[#E5EAF1] bg-white text-[#64748B] hover:text-[#082B50] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            aria-label="Next page"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
       </div>
 
       {/* Delete Confirmation Modal */}

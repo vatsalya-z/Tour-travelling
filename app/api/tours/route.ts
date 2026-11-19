@@ -132,7 +132,7 @@ export async function GET(request: Request) {
         statusParam,
         sortBy,
         isAdmin: requesterAuth.isAdmin,
-      });
+      }).filter((t) => isValidUUID(t.id));
       const total = fallbackList.length;
       const totalPages = Math.ceil(total / limit) || 1;
       return NextResponse.json({
@@ -265,12 +265,17 @@ export async function GET(request: Request) {
         sortBy,
         isAdmin: requesterAuth.isAdmin,
       });
-      const missingDefaults = filteredDefaults.filter((t) => !existingSlugs.has(t.slug));
+      const missingDefaults = filteredDefaults.filter(
+        (t) => !existingSlugs.has(t.slug) && isValidUUID(t.id)
+      );
       if (missingDefaults.length > 0) {
         toursData = [...toursData, ...missingDefaults];
         total = total + missingDefaults.length;
       }
     }
+
+    // Ensure strictly valid UUID tours are returned
+    toursData = toursData.filter((t: any) => t.id && isValidUUID(t.id));
 
     const totalPages = Math.ceil(total / limit) || 1;
 

@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useId } from "react";
+import React, { useState, useId, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   X,
   Check,
@@ -10,6 +11,10 @@ import {
   ArrowUpRight,
   Loader2,
   AlertCircle,
+  Lock,
+  User,
+  Shield,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/features/auth/AuthContext";
 import {
@@ -257,13 +262,23 @@ export default function LeadEnquiryModal({
   defaultDestination = "Kashmir",
   packageInfo,
 }: LeadEnquiryModalProps) {
-  const { user, profile } = useAuth();
+  const { user, profile, isAdmin, login, register } = useAuth();
   const dateInputId = useId();
 
   // Current Step (1 to 7)
   const [step, setStep] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submittedBookingId, setSubmittedBookingId] = useState<string | null>(null);
+
+  // In-modal Customer Login & Registration state (shown when user is unauthenticated)
+  const [authTab, setAuthTab] = useState<"login" | "register">("login");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authFullName, setAuthFullName] = useState("");
+  const [authPhone, setAuthPhone] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // Form State initialized with authenticated user profile prefill
   const [formData, setFormData] = useState(() => ({
@@ -280,6 +295,65 @@ export default function LeadEnquiryModal({
     flight_assistance: "I need help with flight booking" as FlightAssistance,
     preferred_contact_time: "Noon 12 PM - 3 PM" as PreferredContactTime,
   }));
+
+  // Auto-sync profile info to form as soon as customer logs in
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        customer_name: profile?.full_name || (user.user_metadata?.full_name as string) || prev.customer_name,
+        customer_email: profile?.email || user.email || prev.customer_email,
+        customer_phone: profile?.mobile_number || (user.user_metadata?.mobile_number as string) || prev.customer_phone,
+      }));
+    }
+  }, [user, profile]);
+
+  const handleInModalLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError(null);
+    try {
+      const res = await login(authEmail, authPassword);
+      if (!res.success) {
+        setAuthError(res.error || "Invalid email or password");
+      }
+    } catch (err: unknown) {
+      setAuthError(err instanceof Error ? err.message : "Login failed. Please check credentials.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleInModalRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError(null);
+    try {
+      const res = await register(authFullName, authEmail, authPhone, authPassword);
+      if (!res.success) {
+        setAuthError(res.error || "Registration failed");
+      }
+    } catch (err: unknown) {
+      setAuthError(err instanceof Error ? err.message : "Registration failed");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleQuickDemoLogin = async () => {
+    setAuthLoading(true);
+    setAuthError(null);
+    try {
+      const res = await login("dinesh13@gmail.com", "123456");
+      if (!res.success) {
+        setAuthError(res.error || "Demo login failed");
+      }
+    } catch (err: unknown) {
+      setAuthError(err instanceof Error ? err.message : "Demo login failed");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
 
   // Validation errors for Step 1
   const [step1Errors, setStep1Errors] = useState<{
@@ -318,6 +392,11 @@ export default function LeadEnquiryModal({
   // Validate Step 1
   const validateStep1 = (): boolean => {
     const errors: typeof step1Errors = {};
+
+    if (!user?.id) {
+      setStep1Errors({ customer_name: "Customer login is required to submit an enquiry. Please sign in." });
+      return false;
+    }
 
     if (!formData.customer_name.trim() || formData.customer_name.trim().length < 2) {
       errors.customer_name = "Please enter your full name.";
@@ -364,8 +443,16 @@ export default function LeadEnquiryModal({
     setIsSubmitting(true);
     setSubmitError(null);
 
+    if (!user?.id) {
+      setSubmitError("Customer login is required to submit an enquiry. Please sign in.");
+      setIsSubmitting(false);
+      setStep(1);
+      return;
+    }
+
     const payload = {
-      customer_id: user?.id || null,
+      customer_id: user.id,
+      user_id: user.id,
       customer_name: formData.customer_name.trim(),
       customer_email: formData.customer_email.trim(),
       country_code: formData.country_code,
@@ -377,6 +464,7 @@ export default function LeadEnquiryModal({
       destination_name: packageInfo?.destinationName || displayTitle,
       package_url: packageInfo?.packageUrl || (typeof window !== "undefined" ? window.location.href : null),
       package_price: packageInfo?.packagePrice || null,
+      travel_date: formData.preferred_travel_date,
       preferred_travel_date: formData.preferred_travel_date,
       travellers_count: formData.travellers_count,
       message: formData.message.trim() || null,
@@ -390,16 +478,29 @@ export default function LeadEnquiryModal({
     };
 
     try {
-      const res = await fetch("/api/leads", {
+      let res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
+      if (!res.ok) {
+        // Fallback to /api/leads if needed
+        res = await fetch("/api/leads", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
+
       const json = await res.json();
 
       if (!res.ok || !json.success) {
         throw new Error(json.error || "Failed to submit enquiry. Please try again.");
+      }
+
+      if (json.data?.id) {
+        setSubmittedBookingId(json.data.id);
       }
 
       // Success -> move to Step 7
@@ -463,9 +564,9 @@ export default function LeadEnquiryModal({
         {/* Modal Scrollable Content Container */}
         <div className="p-5 sm:p-6 overflow-y-auto flex-1 overscroll-contain">
           {/* =============================================================== */}
-          {/* STEP 1: Basic Travel Enquiry Details                            */}
+          {/* STEP 1A: Customer Login Gate (If unauthenticated)               */}
           {/* =============================================================== */}
-          {step === 1 && (
+          {step === 1 && !user && (
             <div className="space-y-4">
               {/* Header: Destination Thumbnail + Title + Close */}
               <div className="flex items-center justify-between gap-3">
@@ -495,6 +596,234 @@ export default function LeadEnquiryModal({
                 >
                   <X className="w-5 h-5 stroke-[2.5]" />
                 </button>
+              </div>
+
+              {/* Login Requirement Banner */}
+              <div className="p-4 rounded-2xl bg-[#FEF6E9] border border-[#FCD8A4] flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#E52D27] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                  <Lock className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-[#172B4D]">Customer Login Required</h4>
+                  <p className="text-xs text-[#7A869A] mt-0.5 leading-relaxed">
+                    Without logging in, query forms cannot be submitted. Please sign in with your customer account or register to save your enquiry directly under your Customer ID.
+                  </p>
+                </div>
+              </div>
+
+              {/* Tabs: Sign In / Create Account */}
+              <div className="flex border-b border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthTab("login");
+                    setAuthError(null);
+                  }}
+                  className={`flex-1 py-2.5 text-xs font-bold text-center border-b-2 transition-colors cursor-pointer ${
+                    authTab === "login"
+                      ? "border-[#E52D27] text-[#E52D27]"
+                      : "border-transparent text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthTab("register");
+                    setAuthError(null);
+                  }}
+                  className={`flex-1 py-2.5 text-xs font-bold text-center border-b-2 transition-colors cursor-pointer ${
+                    authTab === "register"
+                      ? "border-[#E52D27] text-[#E52D27]"
+                      : "border-transparent text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  Create Account
+                </button>
+              </div>
+
+              {authError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{authError}</span>
+                </div>
+              )}
+
+              {/* Sign In Tab */}
+              {authTab === "login" ? (
+                <form onSubmit={handleInModalLogin} className="space-y-3 pt-1">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 block mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="e.g. rohan@gmail.com"
+                      value={authEmail}
+                      onChange={(e) => setAuthEmail(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-xl placeholder-slate-400 focus:outline-hidden focus:border-[#E52D27] focus:ring-2 focus:ring-[#E52D27]/20 font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 block mb-1">Password</label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="Enter your password"
+                      value={authPassword}
+                      onChange={(e) => setAuthPassword(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-xl placeholder-slate-400 focus:outline-hidden focus:border-[#E52D27] focus:ring-2 focus:ring-[#E52D27]/20 font-medium"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={authLoading}
+                    className="w-full py-3 rounded-xl bg-[#E52D27] hover:bg-[#c9221c] text-white text-xs sm:text-sm font-bold shadow-md shadow-red-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                  >
+                    {authLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Signing In...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Sign In & Continue Enquiry</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+
+                  <div className="pt-2 border-t border-slate-100 text-center">
+                    <button
+                      type="button"
+                      onClick={handleQuickDemoLogin}
+                      disabled={authLoading}
+                      className="text-xs font-semibold text-[#082B50] hover:underline cursor-pointer"
+                    >
+                      ⚡ Quick 1-Click Customer Login (Rohan Sharma)
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <form onSubmit={handleInModalRegister} className="space-y-3 pt-1">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 block mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Your Full Name"
+                      value={authFullName}
+                      onChange={(e) => setAuthFullName(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-xl placeholder-slate-400 focus:outline-hidden focus:border-[#E52D27] focus:ring-2 focus:ring-[#E52D27]/20 font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 block mb-1">Mobile Number</label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="10-digit mobile number"
+                      value={authPhone}
+                      onChange={(e) => setAuthPhone(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-xl placeholder-slate-400 focus:outline-hidden focus:border-[#E52D27] focus:ring-2 focus:ring-[#E52D27]/20 font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 block mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="Enter your email"
+                      value={authEmail}
+                      onChange={(e) => setAuthEmail(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-xl placeholder-slate-400 focus:outline-hidden focus:border-[#E52D27] focus:ring-2 focus:ring-[#E52D27]/20 font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 block mb-1">Password</label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="Create password (min 6 characters)"
+                      value={authPassword}
+                      onChange={(e) => setAuthPassword(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-xl placeholder-slate-400 focus:outline-hidden focus:border-[#E52D27] focus:ring-2 focus:ring-[#E52D27]/20 font-medium"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={authLoading}
+                    className="w-full py-3 rounded-xl bg-[#E52D27] hover:bg-[#c9221c] text-white text-xs sm:text-sm font-bold shadow-md shadow-red-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                  >
+                    {authLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Creating Account...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Register & Continue Enquiry</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+
+          {/* =============================================================== */}
+          {/* STEP 1B: Basic Travel Enquiry Details (When Authenticated)      */}
+          {/* =============================================================== */}
+          {step === 1 && user && (
+            <div className="space-y-4">
+              {/* Header: Destination Thumbnail + Title + Close */}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden bg-slate-100 flex-shrink-0 shadow-xs border border-slate-100">
+                    <Image
+                      src={displayImage}
+                      alt={displayTitle}
+                      fill
+                      unoptimized={displayImage.startsWith("http")}
+                      className="object-cover"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-black text-[#082B50] tracking-tight">
+                      {displayTitle}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-500 font-medium">Plan your next trip</p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label="Close dialog"
+                  className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-800 flex items-center justify-center transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5 stroke-[2.5]" />
+                </button>
+              </div>
+
+              {/* Logged in Customer Verified Badge */}
+              <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span className="text-emerald-900 font-semibold truncate max-w-[200px]">
+                    Customer: {formData.customer_name || user.email}
+                  </span>
+                </div>
+                <span className="font-mono text-[11px] font-bold text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded border border-emerald-300 whitespace-nowrap">
+                  Customer ID: {user.id.slice(0, 8)}
+                </span>
               </div>
 
               {/* Pill Badge: No Cost EMI */}
@@ -1065,14 +1394,30 @@ export default function LeadEnquiryModal({
                 Our destination expert will reach out to you shortly!
               </p>
 
-              <div className="mt-8 pt-4 border-t border-slate-100">
+              {submittedBookingId && (
+                <div className="mt-4 inline-block px-3.5 py-1.5 bg-slate-100 rounded-lg text-xs font-mono text-slate-700 border border-slate-200">
+                  Inquiry Reference: <span className="font-bold text-[#082B50]">#{submittedBookingId.slice(0, 8)}</span>
+                </div>
+              )}
+
+              <div className="mt-8 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-center gap-3">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-8 py-3 rounded-full bg-[#082B50] hover:bg-[#123F68] text-white text-xs sm:text-sm font-bold tracking-wide transition-all shadow-md cursor-pointer"
+                  className="w-full sm:w-auto px-8 py-3 rounded-full bg-[#082B50] hover:bg-[#123F68] text-white text-xs sm:text-sm font-bold tracking-wide transition-all shadow-md cursor-pointer"
                 >
                   Done
                 </button>
+                {isAdmin && (
+                  <Link
+                    href="/admin/bookings"
+                    onClick={onClose}
+                    className="w-full sm:w-auto px-6 py-3 rounded-full border border-[#082B50] text-[#082B50] hover:bg-[#F5F8FC] text-xs sm:text-sm font-bold tracking-wide transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span>View in Admin Bookings</span>
+                    <ArrowUpRight className="w-4 h-4" />
+                  </Link>
+                )}
               </div>
             </div>
           )}

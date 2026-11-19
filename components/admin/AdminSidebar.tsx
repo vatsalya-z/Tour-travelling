@@ -8,7 +8,6 @@ import {
   Compass,
   MapPin,
   CalendarCheck,
-  UserCheck,
   Users,
   BookOpen,
   UserCog,
@@ -77,12 +76,6 @@ export default function AdminSidebar({
       name: "Bookings",
       href: "/admin/bookings",
       icon: CalendarCheck,
-      exact: false,
-    },
-    {
-      name: "Lead Management",
-      href: "/admin/leads",
-      icon: UserCheck,
       exact: false,
     },
     {

@@ -87,28 +87,37 @@ export default function AdminDashboardPage() {
       const draftTours = toursList.filter((t) => t.status === "draft").length;
       setRecentTours(toursList.slice(0, 5));
 
-      // Fetch Bookings Stats
-      const { data: allBookings } = await supabase
-        .from("bookings")
-        .select(`
-          id,
-          tour_id,
-          customer_name,
-          customer_email,
-          customer_phone,
-          travellers_count,
-          travel_date,
-          total_price,
-          status,
-          created_at,
-          tours (
-            name,
-            price
-          )
-        `)
-        .order("created_at", { ascending: false });
-
-      const bookingsList = (allBookings || []) as unknown as Booking[];
+      // Fetch Bookings Stats via API route to bypass RLS
+      let bookingsList: Booking[] = [];
+      try {
+        const bookingsRes = await fetch("/api/bookings?limit=100");
+        const bookingsJson = await bookingsRes.json();
+        if (bookingsJson.success && Array.isArray(bookingsJson.data)) {
+          bookingsList = bookingsJson.data as Booking[];
+        }
+      } catch {
+        // Fallback to direct client
+        const { data: allBookings } = await supabase
+          .from("bookings")
+          .select(`
+            id,
+            tour_id,
+            customer_name,
+            customer_email,
+            customer_phone,
+            travellers_count,
+            travel_date,
+            total_price,
+            status,
+            created_at,
+            tours (
+              name,
+              price
+            )
+          `)
+          .order("created_at", { ascending: false });
+        bookingsList = (allBookings || []) as unknown as Booking[];
+      }
       const totalBookings = bookingsList.length;
       const pendingBookings = bookingsList.filter((b) => b.status === "pending").length;
       const confirmedBookings = bookingsList.filter((b) => b.status === "confirmed").length;
