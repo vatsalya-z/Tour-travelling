@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TourTripHolidays Monorepo Architecture
 
-## Getting Started
+This repository is organized as a production-ready monorepo separating the user-facing web portal from the administrative dashboard for seamless dual-domain deployment on Vercel.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 📁 Monorepo Folder Structure
+
+```
+Tour-travelling/
+├── apps/
+│   ├── web/                     # 🌐 Main Customer Website (Domain: tourtripholidays.com)
+│   │   ├── app/                 # Next.js App Router (Homepage, /about, /blog, /packages, /my-enquiries)
+│   │   ├── components/          # Web UI components (home, blog, shared, ui)
+│   │   ├── features/            # Authentication & State
+│   │   ├── lib/                 # Supabase client, helpers & default datasets
+│   │   ├── public/              # Static media, hero banners & destination photography
+│   │   ├── types/               # TypeScript definitions
+│   │   ├── package.json         # Web dependencies & scripts
+│   │   └── next.config.ts       # Web config with automatic /admin redirect
+│   │
+│   └── admin/                   # ⚙️ Admin Management Portal (Subdomain: admin.tourtripholidays.com)
+│       ├── app/                 # Admin App Router (Dashboard, /tours, /bookings, /leads, /blogs, /about, /users)
+│       ├── components/          # Admin UI components (AdminSidebar, AdminHeader, TourForm, BlogForm)
+│       ├── features/            # Admin AuthGuard & Session
+│       ├── lib/                 # Supabase Admin client & storage handlers
+│       ├── public/              # Admin static assets & logos
+│       ├── types/               # TypeScript definitions
+│       ├── package.json         # Admin dependencies & scripts
+│       └── next.config.ts       # Admin config with subdomain rewrites
+│
+├── packages/                    # 📦 Shared workspace utilities & packages
+├── scripts/                     # 🛠️ Database seeding & maintenance scripts
+│   └── seed-kashmir.mjs
+├── supabase/                    # 🗄️ Database schemas & SQL migrations
+│   ├── migrations/
+│   ├── register_user.sql
+│   └── schema.sql
+├── .env.example                 # Example environment variables
+├── .gitignore                   # Monorepo ignore rules
+├── package.json                 # Root monorepo workspace configuration
+├── tsconfig.json                # Root TypeScript configuration
+└── README.md                    # Documentation & Vercel deployment guide
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Local Development
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Both applications can be run independently or together via root npm workspace commands:
 
-## Learn More
+| Command | Action | Local URL |
+| :--- | :--- | :--- |
+| `npm run dev:web` | Starts customer web application | `http://localhost:3000` |
+| `npm run dev:admin` | Starts admin portal application | `http://localhost:3001` |
+| `npm run build:web` | Builds customer web app for production | - |
+| `npm run build:admin` | Builds admin app for production | - |
+| `npm run build` | Builds both apps | - |
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## ☁️ Vercel Deployment Guide
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Deploying this architecture to Vercel with your main domain and admin subdomain is simple and requires zero complex build pipelines because each app is completely self-contained.
 
-## Deploy on Vercel
+### 1. Deploying the Customer Website (`web`)
+- **Step 1**: In Vercel, click **Add New...** > **Project** and import your `Tour-travelling` repository.
+- **Step 2**: In the **Configure Project** screen:
+  - **Project Name**: `tour-web` (or any name you prefer)
+  - **Framework Preset**: `Next.js`
+  - **Root Directory**: Click *Edit* and select **`apps/web`**
+- **Step 3**: Under **Environment Variables**, add:
+  ```env
+  NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+  NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+  SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+  NEXT_PUBLIC_ADMIN_URL=https://admin.tourtripholidays.com
+  ```
+- **Step 4**: Click **Deploy**.
+- **Step 5**: Once deployed, navigate to **Settings** > **Domains** and assign your root domain (e.g. `tourtripholidays.com` and `www.tourtripholidays.com`).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 2. Deploying the Admin Portal (`admin`)
+- **Step 1**: In Vercel, click **Add New...** > **Project** and import the same `Tour-travelling` repository again.
+- **Step 2**: In the **Configure Project** screen:
+  - **Project Name**: `tour-admin`
+  - **Framework Preset**: `Next.js`
+  - **Root Directory**: Click *Edit* and select **`apps/admin`**
+- **Step 3**: Under **Environment Variables**, add:
+  ```env
+  NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+  NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+  SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+  ```
+- **Step 4**: Click **Deploy**.
+- **Step 5**: Once deployed, navigate to **Settings** > **Domains** and assign your subdomain:
+  - Domain: **`admin.tourtripholidays.com`**
+  - Add the CNAME record generated by Vercel in your DNS manager (e.g. Cloudflare, GoDaddy, Namecheap).
+
+---
+
+## 🔒 Security & Subdomain Architecture
+- **Admin Isolation**: The administrative codebase, edit capabilities, and dashboards are completely decoupled from customer-facing bundle sizes.
+- **Search Engine Protection**: The admin portal layout includes `robots: { index: false, follow: false }` to prevent search engines from indexing administrative management pages.
+- **Automatic Redirects**: If a user attempts to access `/admin` on the primary web domain, `apps/web/next.config.ts` automatically redirects them to the dedicated admin subdomain.
