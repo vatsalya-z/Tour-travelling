@@ -559,6 +559,7 @@ export async function PUT(request: Request, context: RouteContext) {
       "itinerary",
       "inclusions",
       "exclusions",
+      "faqs",
     ] as const;
 
     for (const field of arrayFields) {

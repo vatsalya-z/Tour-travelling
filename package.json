@@ -11,7 +11,7 @@
     "dev:admin": "npm run dev --workspace=apps/admin",
     "build:web": "npm run build --workspace=apps/web",
     "build:admin": "npm run build --workspace=apps/admin",
-    "build": "npm run build:web && npm run build:admin",
+    "build": "npm run build:web && npm run build:admin && node scripts/sync-root-build.mjs",
     "start:web": "npm run start --workspace=apps/web",
     "start:admin": "npm run start --workspace=apps/admin",
     "lint": "npm run lint --workspaces --if-present"
@@ -20,6 +20,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "next": "16.4.4",
     "typescript": "^5"
   }
 }

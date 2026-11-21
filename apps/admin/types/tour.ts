@@ -2,6 +2,12 @@ import { Destination } from "./destination";
 
 export type TourStatus = "published" | "draft";
 
+export interface TourFAQ {
+  question: string;
+  answer: string;
+  order?: number;
+}
+
 export interface TourItineraryDay {
   day: number;
   title: string;
@@ -39,6 +45,7 @@ export interface Tour {
   itinerary: TourItineraryDay[];
   inclusions: string[];
   exclusions: string[];
+  faqs?: TourFAQ[];
   pickup_location: string | null;
   drop_location: string | null;
   cancellation_policy: string | null;

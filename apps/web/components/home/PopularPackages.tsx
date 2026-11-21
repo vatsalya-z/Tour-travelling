@@ -3,82 +3,27 @@
 import React, { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, ArrowRight, Clock, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
-import { formatCurrency } from "@/lib/utils";
-import { EnquiryPackageInfo } from "@/types/lead";
-
-interface PopularPackagesProps {
-  onSelectPackage?: (pkg: string | EnquiryPackageInfo) => void;
-}
+import { DEFAULT_TOURS } from "@/lib/tour-default-data";
 
 interface PackageItem {
   id: string | number;
+  slug: string;
   title: string;
-  duration: string;
   image: string;
-  rating: number;
-  reviews?: number;
-  price: string;
-  destination: string;
 }
 
-export default function PopularPackages({ onSelectPackage }: PopularPackagesProps) {
+export default function PopularPackages() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const defaultPackages: PackageItem[] = [
-    {
-      id: 1,
-      title: "Kashmir Tour Package",
-      duration: "5 Nights / 6 Days",
-      image: "/images/packages/kashmir.jpg",
-      rating: 4.9,
-      reviews: 142,
-      price: "₹18,999",
-      destination: "Jammu & Kashmir",
-    },
-    {
-      id: 2,
-      title: "Himachal Tour Package",
-      duration: "4 Nights / 5 Days",
-      image: "/images/packages/himachal.jpg",
-      rating: 4.8,
-      reviews: 128,
-      price: "₹14,499",
-      destination: "Himachal Pradesh (Manali / Shimla)",
-    },
-    {
-      id: 3,
-      title: "Kerala Tour Package",
-      duration: "5 Nights / 6 Days",
-      image: "/images/packages/kerala.jpg",
-      rating: 4.9,
-      reviews: 195,
-      price: "₹19,500",
-      destination: "Kerala (Munnar / Alleppey)",
-    },
-    {
-      id: 4,
-      title: "Rajasthan Tour Package",
-      duration: "5 Nights / 6 Days",
-      image: "/images/packages/rajasthan.jpg",
-      rating: 4.9,
-      reviews: 164,
-      price: "₹17,800",
-      destination: "Rajasthan (Jaipur / Udaipur)",
-    },
-    {
-      id: 5,
-      title: "Goa Tour Package",
-      duration: "3 Nights / 4 Days",
-      image: "/images/packages/goa.jpg",
-      rating: 4.7,
-      reviews: 210,
-      price: "₹11,999",
-      destination: "Goa",
-    },
-  ];
+  const defaultPackages: PackageItem[] = DEFAULT_TOURS.slice(0, 6).map((t) => ({
+    id: t.id,
+    slug: t.slug,
+    title: t.name,
+    image: t.cover_image || "/images/packages/kashmir-4n5d-cover.webp",
+  }));
 
   const [packages, setPackages] = useState<PackageItem[]>(defaultPackages);
 
@@ -91,13 +36,9 @@ export default function PopularPackages({ onSelectPackage }: PopularPackagesProp
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
           const livePackages: PackageItem[] = json.data.map((t: any) => ({
             id: t.id,
+            slug: t.slug,
             title: t.name,
-            duration: `${t.nights} Nights / ${t.days} Days`,
-            image: t.cover_image || "/images/packages/kashmir.jpg",
-            rating: 4.9,
-            reviews: 150,
-            price: formatCurrency(t.discounted_price || t.price),
-            destination: t.destination?.name || t.state || t.name,
+            image: t.cover_image || "/images/packages/kashmir-4n5d-cover.webp",
           }));
           setPackages(livePackages);
           return;
@@ -108,33 +49,16 @@ export default function PopularPackages({ onSelectPackage }: PopularPackagesProp
           const supabase = createClient();
           const { data } = await supabase
             .from("tours")
-            .select(`
-              id,
-              name,
-              days,
-              nights,
-              price,
-              discounted_price,
-              cover_image,
-              state,
-              destination_id,
-              destinations (
-                name
-              )
-            `)
+            .select("id, name, slug, cover_image")
             .eq("status", "published")
             .order("created_at", { ascending: false });
 
           if (data && data.length > 0) {
             const livePackages: PackageItem[] = data.map((t: any) => ({
               id: t.id,
+              slug: t.slug,
               title: t.name,
-              duration: `${t.nights} Nights / ${t.days} Days`,
-              image: t.cover_image || "/images/packages/kashmir.jpg",
-              rating: 4.9,
-              reviews: 150,
-              price: formatCurrency(t.discounted_price || t.price),
-              destination: t.destinations?.name || t.state || t.name,
+              image: t.cover_image || "/images/packages/kashmir-4n5d-cover.webp",
             }));
             setPackages(livePackages);
           }
@@ -158,21 +82,6 @@ export default function PopularPackages({ onSelectPackage }: PopularPackagesProp
     }
   };
 
-  const handleCardClick = (pkg: PackageItem) => {
-    if (onSelectPackage) {
-      const numericPrice = typeof pkg.price === "string" ? parseFloat(pkg.price.replace(/[^\d.]/g, "")) : undefined;
-      onSelectPackage({
-        tourId: typeof pkg.id === "string" ? pkg.id : null,
-        tourName: pkg.title,
-        destinationName: pkg.destination,
-        packagePrice: isNaN(numericPrice as number) ? null : numericPrice,
-        packageImage: pkg.image,
-        sourcePage: "Homepage",
-        sourceCta: "Popular Package Card",
-      });
-    }
-  };
-
   const ViewAllButton = () => {
     return (
       <Link
@@ -192,7 +101,7 @@ export default function PopularPackages({ onSelectPackage }: PopularPackagesProp
           {/* Left Callout Column */}
           <div className="lg:col-span-3 flex flex-col justify-center text-center lg:text-left items-center lg:items-start">
             <h3 className="text-2xl sm:text-3xl font-black text-[#082B50] leading-tight">
-              Our 20 Most Popular
+              Our Most Popular
             </h3>
             <h4 className="text-2xl sm:text-3xl font-black text-[#F15A24] leading-tight mt-0.5">
               Tour Packages
@@ -235,11 +144,10 @@ export default function PopularPackages({ onSelectPackage }: PopularPackagesProp
               {packages.map((pkg) => (
                 <div
                   key={pkg.id}
-                  onClick={() => handleCardClick(pkg)}
-                  className="flex-shrink-0 w-[240px] sm:w-[260px] snap-start bg-white rounded-xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 overflow-hidden flex flex-col group cursor-pointer"
+                  className="flex-shrink-0 w-[240px] sm:w-[260px] snap-start bg-white rounded-xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 overflow-hidden flex flex-col group"
                 >
-                  {/* Package Image */}
-                  <div className="relative h-36 sm:h-40 w-full overflow-hidden bg-slate-100">
+                  {/* 1. Package Cover Image */}
+                  <div className="relative h-44 sm:h-48 w-full overflow-hidden bg-slate-100">
                     <Image
                       src={pkg.image}
                       alt={pkg.title}
@@ -248,30 +156,21 @@ export default function PopularPackages({ onSelectPackage }: PopularPackagesProp
                       sizes="260px"
                       className="object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
                     />
-                    <div className="absolute top-2.5 right-2.5 bg-white/95 backdrop-blur-xs px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs text-xs font-bold text-[#082B50]">
-                      <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                      <span>{pkg.rating}</span>
-                    </div>
                   </div>
 
-                  {/* Card Content */}
-                  <div className="p-3.5 flex flex-col flex-1 justify-between">
-                    <div>
-                      <h5 className="font-extrabold text-[#082B50] text-sm sm:text-[15px] leading-snug group-hover:text-[#F15A24] transition-colors">
-                        {pkg.title}
-                      </h5>
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mt-1.5">
-                        <Clock className="w-3.5 h-3.5 text-[#F15A24]" />
-                        <span>{pkg.duration}</span>
-                      </div>
-                    </div>
+                  {/* 2. Package Name & 3. View Details Button */}
+                  <div className="p-4 flex flex-col flex-1 justify-between gap-3">
+                    <h5 className="font-extrabold text-[#082B50] text-sm sm:text-[15px] leading-snug group-hover:text-[#F15A24] transition-colors line-clamp-2 min-h-[40px]">
+                      {pkg.title}
+                    </h5>
 
-                    <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
-                      <span className="text-xs text-slate-400">Starting from</span>
-                      <span className="text-sm font-black text-[#082B50]">
-                        {pkg.price}
-                      </span>
-                    </div>
+                    <Link
+                      href={`/tours/${pkg.slug}`}
+                      className="inline-flex items-center justify-center gap-1.5 w-full bg-[#082B50] hover:bg-[#F15A24] text-white font-bold text-xs py-2.5 px-4 rounded-lg transition-colors group/btn shadow-xs cursor-pointer"
+                    >
+                      <span>View Details</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />
+                    </Link>
                   </div>
                 </div>
               ))}

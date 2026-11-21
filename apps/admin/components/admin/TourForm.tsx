@@ -20,6 +20,10 @@ import {
   Image as ImageIcon,
   ArrowLeft,
   ChevronDown,
+  ChevronUp,
+  ArrowUp,
+  ArrowDown,
+  HelpCircle,
   Layers,
   Tag,
   FileText,
@@ -32,7 +36,7 @@ import { createClient, getAdminBearerToken } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { uploadTourImage } from "@/lib/supabase/storage";
 import { slugify, formatCurrency } from "@/lib/utils";
-import { Tour, TourItineraryDay, TourStatus } from "@/types/tour";
+import { Tour, TourItineraryDay, TourStatus, TourFAQ } from "@/types/tour";
 import { Destination } from "@/types/destination";
 
 interface TourFormProps {
@@ -139,7 +143,13 @@ export default function TourForm({ initialData, isEdit = false }: TourFormProps)
   );
   const [newExclusion, setNewExclusion] = useState("");
 
-  // 8. Additional Information
+  // 8. Additional Information (Pickup, Drop, Policies & Notes)
+  const [pickupLocation, setPickupLocation] = useState(initialData?.pickup_location || "");
+  const [dropLocation, setDropLocation] = useState(initialData?.drop_location || "");
+  const [paymentTerms, setPaymentTerms] = useState(
+    initialData?.payment_terms || "25% advance to confirm booking, balance 7 days prior to departure."
+  );
+  const [importantNotes, setImportantNotes] = useState(initialData?.important_notes || "");
   const [cancellationPolicy, setCancellationPolicy] = useState(
     initialData?.cancellation_policy ||
       "Free cancellation up to 15 days before departure. 50% refund between 7-14 days. Non-refundable within 7 days of trip date."
@@ -148,6 +158,13 @@ export default function TourForm({ initialData, isEdit = false }: TourFormProps)
     initialData?.terms ||
       "Prices are subject to seasonal availability. Valid government photo ID is required for all travellers at check-in."
   );
+
+  // 9. Package FAQs
+  const [faqs, setFaqs] = useState<TourFAQ[]>(
+    Array.isArray(initialData?.faqs) ? initialData.faqs : []
+  );
+  const [newFaqQ, setNewFaqQ] = useState("");
+  const [newFaqA, setNewFaqA] = useState("");
 
   // 9. SEO Settings
   const [metaTitle, setMetaTitle] = useState(initialData?.meta_title || "");
@@ -288,6 +305,32 @@ export default function TourForm({ initialData, isEdit = false }: TourFormProps)
     setExclusions(exclusions.filter((_, i) => i !== idx));
   };
 
+  // FAQ Actions
+  const addFaq = () => {
+    if (newFaqQ.trim() && newFaqA.trim()) {
+      setFaqs([...faqs, { question: newFaqQ.trim(), answer: newFaqA.trim(), order: faqs.length + 1 }]);
+      setNewFaqQ("");
+      setNewFaqA("");
+    }
+  };
+  const updateFaq = (index: number, field: "question" | "answer", val: string) => {
+    const copy = [...faqs];
+    copy[index] = { ...copy[index], [field]: val };
+    setFaqs(copy);
+  };
+  const removeFaq = (index: number) => {
+    setFaqs(faqs.filter((_, i) => i !== index));
+  };
+  const moveFaq = (index: number, direction: "up" | "down") => {
+    if ((direction === "up" && index === 0) || (direction === "down" && index === faqs.length - 1)) return;
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    const copy = [...faqs];
+    const temp = copy[index];
+    copy[index] = copy[targetIndex];
+    copy[targetIndex] = temp;
+    setFaqs(copy);
+  };
+
   // Form submission handler
   const handleSubmit = async (targetStatus?: TourStatus) => {
     setErrorMsg("");
@@ -330,8 +373,13 @@ export default function TourForm({ initialData, isEdit = false }: TourFormProps)
       itinerary,
       inclusions,
       exclusions,
+      pickup_location: pickupLocation.trim() || null,
+      drop_location: dropLocation.trim() || null,
       cancellation_policy: cancellationPolicy,
+      payment_terms: paymentTerms.trim() || null,
       terms,
+      important_notes: importantNotes.trim() || null,
+      faqs,
       meta_title: metaTitle || name,
       meta_description: metaDescription || shortDescription,
       meta_keywords: metaKeywords,
@@ -1096,12 +1144,38 @@ export default function TourForm({ initialData, isEdit = false }: TourFormProps)
         <div className="border-b border-[#E5EAF1] pb-3">
           <h2 className="text-sm font-bold text-[#082B50] font-display flex items-center gap-2">
             <span className="w-5 h-5 rounded-full bg-[#082B50] text-white text-[10px] font-bold flex items-center justify-center">8</span>
-            <span>Additional Information</span>
+            <span>Additional Information & Logistics</span>
           </h2>
-          <p className="text-[11px] text-[#64748B] mt-0.5">Cancellation policy and booking terms</p>
+          <p className="text-[11px] text-[#64748B] mt-0.5">Pickup/drop locations, policies, payment terms, and important notes</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-[#172B4D] mb-1">
+              Pickup Location
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. Srinagar Airport (SXR)"
+              value={pickupLocation}
+              onChange={(e) => setPickupLocation(e.target.value)}
+              className="w-full h-11 px-3 text-xs bg-[#F5F8FC] border border-[#E5EAF1] rounded-lg text-[#172B4D]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-[#172B4D] mb-1">
+              Drop Location
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. Srinagar Airport (SXR)"
+              value={dropLocation}
+              onChange={(e) => setDropLocation(e.target.value)}
+              className="w-full h-11 px-3 text-xs bg-[#F5F8FC] border border-[#E5EAF1] rounded-lg text-[#172B4D]"
+            />
+          </div>
+
           <div>
             <label className="block text-xs font-medium text-[#172B4D] mb-1">
               Cancellation Policy
@@ -1110,6 +1184,19 @@ export default function TourForm({ initialData, isEdit = false }: TourFormProps)
               rows={3}
               value={cancellationPolicy}
               onChange={(e) => setCancellationPolicy(e.target.value)}
+              className="w-full p-2.5 text-xs bg-[#F5F8FC] border border-[#E5EAF1] rounded-lg text-[#172B4D]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-[#172B4D] mb-1">
+              Payment Terms
+            </label>
+            <textarea
+              rows={3}
+              placeholder="e.g. 25% advance to confirm booking, balance 7 days prior to departure."
+              value={paymentTerms}
+              onChange={(e) => setPaymentTerms(e.target.value)}
               className="w-full p-2.5 text-xs bg-[#F5F8FC] border border-[#E5EAF1] rounded-lg text-[#172B4D]"
             />
           </div>
@@ -1125,14 +1212,133 @@ export default function TourForm({ initialData, isEdit = false }: TourFormProps)
               className="w-full p-2.5 text-xs bg-[#F5F8FC] border border-[#E5EAF1] rounded-lg text-[#172B4D]"
             />
           </div>
+
+          <div>
+            <label className="block text-xs font-medium text-[#172B4D] mb-1">
+              Important Travel Notes
+            </label>
+            <textarea
+              rows={3}
+              placeholder="Special instructions, government ID requirements, altitude notes, union cab rules..."
+              value={importantNotes}
+              onChange={(e) => setImportantNotes(e.target.value)}
+              className="w-full p-2.5 text-xs bg-[#F5F8FC] border border-[#E5EAF1] rounded-lg text-[#172B4D]"
+            />
+          </div>
         </div>
       </div>
 
-      {/* 9. SEO Settings */}
+      {/* 9. Package FAQs */}
+      <div className="bg-white rounded-xl border border-[#E5EAF1] p-5 shadow-xs space-y-4">
+        <div className="border-b border-[#E5EAF1] pb-3 flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-bold text-[#082B50] font-display flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-[#082B50] text-white text-[10px] font-bold flex items-center justify-center">9</span>
+              <span>Package FAQs ({faqs.length})</span>
+            </h2>
+            <p className="text-[11px] text-[#64748B] mt-0.5">Manage destination and package-specific frequently asked questions</p>
+          </div>
+        </div>
+
+        {/* Add New FAQ Form */}
+        <div className="p-4 rounded-xl bg-[#F5F8FC] border border-[#E5EAF1] space-y-3">
+          <span className="text-xs font-bold text-[#082B50] block">Add New Question & Answer</span>
+          <input
+            type="text"
+            placeholder="e.g. What is the best time to visit Kashmir?"
+            value={newFaqQ}
+            onChange={(e) => setNewFaqQ(e.target.value)}
+            className="w-full h-10 px-3 text-xs bg-white border border-[#E5EAF1] rounded-lg text-[#172B4D]"
+          />
+          <textarea
+            rows={2}
+            placeholder="Provide a clear, detailed and factual answer..."
+            value={newFaqA}
+            onChange={(e) => setNewFaqA(e.target.value)}
+            className="w-full p-2.5 text-xs bg-white border border-[#E5EAF1] rounded-lg text-[#172B4D]"
+          />
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={addFaq}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#082B50] hover:bg-[#123F68] text-white text-xs font-bold transition-colors cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add FAQ</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Existing FAQs List with Reordering & Delete */}
+        {faqs.length > 0 && (
+          <div className="space-y-3 mt-4">
+            {faqs.map((faqItem, fIdx) => (
+              <div
+                key={fIdx}
+                className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-2"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-bold flex items-center justify-center">
+                      {fIdx + 1}
+                    </span>
+                    <span className="text-xs font-bold text-[#082B50]">FAQ #{fIdx + 1}</span>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      disabled={fIdx === 0}
+                      onClick={() => moveFaq(fIdx, "up")}
+                      className="p-1 rounded text-slate-500 hover:text-[#082B50] hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
+                      title="Move Up"
+                    >
+                      <ArrowUp className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={fIdx === faqs.length - 1}
+                      onClick={() => moveFaq(fIdx, "down")}
+                      className="p-1 rounded text-slate-500 hover:text-[#082B50] hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
+                      title="Move Down"
+                    >
+                      <ArrowDown className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeFaq(fIdx)}
+                      className="p-1 rounded text-rose-500 hover:bg-rose-50 cursor-pointer"
+                      title="Remove FAQ"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                <input
+                  type="text"
+                  value={faqItem.question}
+                  onChange={(e) => updateFaq(fIdx, "question", e.target.value)}
+                  className="w-full h-9 px-3 text-xs bg-[#F5F8FC] border border-[#E5EAF1] rounded-lg text-[#172B4D] font-medium"
+                />
+
+                <textarea
+                  rows={2}
+                  value={faqItem.answer}
+                  onChange={(e) => updateFaq(fIdx, "answer", e.target.value)}
+                  className="w-full p-2.5 text-xs bg-[#F5F8FC] border border-[#E5EAF1] rounded-lg text-[#172B4D]"
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 10. SEO Settings */}
       <div className="bg-white rounded-xl border border-[#E5EAF1] p-5 shadow-xs space-y-4">
         <div className="border-b border-[#E5EAF1] pb-3">
           <h2 className="text-sm font-bold text-[#082B50] font-display flex items-center gap-2">
-            <span className="w-5 h-5 rounded-full bg-[#082B50] text-white text-[10px] font-bold flex items-center justify-center">9</span>
+            <span className="w-5 h-5 rounded-full bg-[#082B50] text-white text-[10px] font-bold flex items-center justify-center">10</span>
             <span>SEO Settings</span>
           </h2>
           <p className="text-[11px] text-[#64748B] mt-0.5">Search engine metadata and indexing options</p>
@@ -1182,11 +1388,11 @@ export default function TourForm({ initialData, isEdit = false }: TourFormProps)
         </div>
       </div>
 
-      {/* 10. Publishing Settings */}
+      {/* 11. Publishing Settings */}
       <div className="bg-white rounded-xl border border-[#E5EAF1] p-5 shadow-xs space-y-4">
         <div className="border-b border-[#E5EAF1] pb-3">
           <h2 className="text-sm font-bold text-[#082B50] font-display flex items-center gap-2">
-            <span className="w-5 h-5 rounded-full bg-[#082B50] text-white text-[10px] font-bold flex items-center justify-center">10</span>
+            <span className="w-5 h-5 rounded-full bg-[#082B50] text-white text-[10px] font-bold flex items-center justify-center">11</span>
             <span>Publishing Settings</span>
           </h2>
           <p className="text-[11px] text-[#64748B] mt-0.5">Control package visibility on public website</p>

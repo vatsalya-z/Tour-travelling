@@ -13,12 +13,7 @@ import {
   AlertCircle,
   Search,
   Sparkles,
-  ChevronRight,
   ShieldCheck,
-  CheckCircle2,
-  Award,
-  Headphones,
-  SlidersHorizontal,
   X,
 } from "lucide-react";
 import TopBar from "@/components/shared/TopBar";
@@ -162,31 +157,14 @@ function TourPackagesContent() {
     setModalOpen(true);
   };
 
-  const renderTourCard = (tour: Tour, ctaSource?: string) => {
-    const destinationName = tour.destination?.name || tour.state || "India";
-    const hasDiscount =
-      tour.discounted_price !== null &&
-      tour.discounted_price !== undefined &&
-      Number(tour.discounted_price) > 0 &&
-      Number(tour.discounted_price) < Number(tour.price);
-
-    const discountPercent = hasDiscount
-      ? Math.round(
-          ((Number(tour.price) - Number(tour.discounted_price)) /
-            Number(tour.price)) *
-            100
-        )
-      : 0;
-
-    const displayPrice = hasDiscount ? tour.discounted_price : tour.price;
-
+  const renderTourCard = (tour: Tour) => {
     return (
       <article
         key={tour.id}
-        className="bg-white rounded-2xl border border-[#E5EAF1] shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col overflow-hidden group"
+        className="bg-white rounded-xl sm:rounded-2xl border border-[#E5EAF1] shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col overflow-hidden group"
       >
-        {/* Tour Cover Image (100% Dynamic from Backend) */}
-        <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 flex-shrink-0">
+        {/* 1. Package Cover Image */}
+        <div className="relative aspect-[16/10] w-full overflow-hidden flex-shrink-0 bg-slate-100">
           {tour.cover_image ? (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
@@ -196,97 +174,29 @@ function TourPackagesContent() {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 p-4 text-center">
-              <Compass className="w-8 h-8 text-slate-400 mb-2" />
-              <span className="text-xs font-semibold text-slate-500">
+            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 p-2 sm:p-4 text-center">
+              <Compass className="w-6 h-6 sm:w-8 sm:h-8 text-slate-400 mb-1 sm:mb-2" />
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">
                 {tour.name}
               </span>
             </div>
           )}
-
-          {/* Top Badges (100% Dynamic from Backend) */}
-          <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
-            {hasDiscount ? (
-              <span className="bg-[#F15A24] text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full shadow-md">
-                {discountPercent}% OFF
-              </span>
-            ) : tour.category ? (
-              <span className="bg-[#082B50]/80 backdrop-blur-xs text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-xs">
-                {tour.category}
-              </span>
-            ) : (
-              <span />
-            )}
-
-            <span className="bg-white/95 backdrop-blur-xs text-[#082B50] text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3 text-[#16A36A]" />
-              <span>Verified</span>
-            </span>
-          </div>
         </div>
 
-        {/* Card Body (100% Dynamic from Backend) */}
-        <div className="p-5 flex-1 flex flex-col justify-between">
-          <div>
-            {/* Destination & Duration Chips */}
-            <div className="flex items-center gap-2 mb-2.5 flex-wrap">
-              {destinationName && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#082B50] bg-[#EAF6FC] px-2.5 py-0.5 rounded-full">
-                  <MapPin className="w-3 h-3 text-[#F15A24] flex-shrink-0" />
-                  <span className="truncate max-w-[140px]">{destinationName}</span>
-                </span>
-              )}
+        {/* 2. Package Name & 3. View Details Button */}
+        <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between gap-3">
+          <h2 className="font-bold sm:font-extrabold text-[#082B50] text-sm sm:text-base group-hover:text-[#F15A24] transition-colors line-clamp-2 leading-snug">
+            {tour.name}
+          </h2>
 
-              {(tour.days || tour.nights) && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full">
-                  <Clock className="w-3 h-3 text-[#F15A24] flex-shrink-0" />
-                  <span>
-                    {tour.days} Days / {tour.nights} Nights
-                  </span>
-                </span>
-              )}
-            </div>
-
-            {/* Package Name */}
-            <h2 className="font-extrabold text-[#082B50] text-base group-hover:text-[#F15A24] transition-colors line-clamp-2 leading-snug">
-              {tour.name}
-            </h2>
-
-            {/* Short Description */}
-            {(tour.short_description || tour.description) && (
-              <p className="text-xs text-[#64748B] mt-2 line-clamp-2 leading-relaxed">
-                {tour.short_description || tour.description}
-              </p>
-            )}
-          </div>
-
-          {/* Pricing and Action Row */}
-          <div className="mt-5 pt-3.5 border-t border-[#E5EAF1] flex items-center justify-between gap-3">
-            <div>
-              <span className="text-[10px] text-slate-400 block font-medium uppercase tracking-wider">
-                Starting Price
-              </span>
-              <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className="text-lg font-black text-[#082B50]">
-                  {formatCurrency(displayPrice)}
-                </span>
-                {hasDiscount && (
-                  <span className="text-xs text-slate-400 line-through">
-                    {formatCurrency(tour.price)}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* View Details / Enquire Button */}
-            <button
-              type="button"
-              onClick={() => handleOpenEnquiry(tour, ctaSource)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#082B50] hover:bg-[#F15A24] text-white text-xs font-bold transition-all shadow-xs group/btn cursor-pointer"
+          <div className="mt-2 pt-3 border-t border-[#E5EAF1]">
+            <Link
+              href={`/tours/${tour.slug}`}
+              className="inline-flex items-center justify-center gap-1 sm:gap-1.5 px-3.5 py-2 rounded-lg sm:rounded-xl bg-[#082B50] hover:bg-[#F15A24] text-white text-xs sm:text-sm font-bold transition-all shadow-xs group/btn cursor-pointer w-full text-center"
             >
               <span>View Details</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
-            </button>
+              <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />
+            </Link>
           </div>
         </div>
       </article>
@@ -295,102 +205,59 @@ function TourPackagesContent() {
 
   return (
     <>
-      {/* ===================================================================
-          1. FULL WIDTH HERO BANNER (100% Viewport Width)
-          - Atmospheric Himalayan background image with deep navy gradient overlay
-          - Breadcrumb navigation, promotional pill badges, grand typography
-          - Key trust metrics & live packages count
-          =================================================================== */}
+      
       <section className="relative w-full overflow-hidden bg-[#082B50] text-white">
         {/* Full-bleed Panoramic Scenic Background Image */}
         <div className="absolute inset-0 z-0 select-none overflow-hidden">
           <Image
-            src="/images/packages/goa.jpg"
-            alt="Scenic Mountains Landscape Background"
+            src="/images/packages/packages-hero-banner.jpg"
+            alt="Scenic Indian Mountain Landscape and Travel Packages"
             fill
             priority
             sizes="100vw"
-            className="object-fit object-center w-full h-full "
+            className="object-cover object-center w-full h-full"
           />
-       
+          
         </div>
 
-        {/* Hero Content Container */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-16 sm:pt-16 sm:pb-20 lg:pt-20 lg:pb-24">
+        {/* Hero Content Container - Broad & Expansive Full-width Layout */}
+        <div className="relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 py-16 sm:py-20 lg:py-28 min-h-[360px] sm:min-h-[440px] lg:min-h-[500px] flex flex-col justify-center items-center">
           {/* Breadcrumb Navigation Pill */}
-          <div className="flex items-center gap-2 mb-4 sm:mb-6">
+          <div className="flex items-center justify-center gap-2 mb-4 sm:mb-6">
             <nav
               aria-label="Breadcrumb"
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-slate-200"
+              className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-slate-200"
             >
               <Link href="/" className="hover:text-[#F15A24] transition-colors font-medium">
                 Home
               </Link>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-slate-400 text-xs">/</span>
               <span className="text-[#F15A24] font-semibold">Tour Packages</span>
             </nav>
-
-
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Left Main Hero Typography */}
-            <div className="lg:col-span-8 text-center sm:text-left">
+          <div className="w-full max-w-6xl mx-auto text-center flex flex-col items-center">
+            {/* Main Headline (Expansive & Grand Width) */}
+            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-display tracking-tight text-white leading-[1.12] text-center w-full max-w-5xl">
+              Explore India’s Most Popular{" "}
+              <span className="text-[#F15A24] block sm:inline">Tour Packages</span>
+            </h1>
 
-              {/* Main Headline */}
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight text-white leading-[1.15]">
-                Explore India’s Most Popular{" "}
-                <span className="text-[#F15A24] block sm:inline">Tour Packages</span>
-              </h1>
-
-              {/* Sub-headline / Description */}
-              <p className="text-xs sm:text-base text-slate-200 mt-4 max-w-2xl leading-relaxed justify-center items-center">
-                From the snow-capped mountains of Kashmir to the tropical backwaters of Kerala and regal forts of Rajasthan.
-                Handcrafted domestic holidays with premium stays, certified local guides, and guaranteed best prices.
-              </p>
-
-              {/* Trust Feature Highlights Row */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-8 pt-6 border-t border-white/15">
-                <div className="flex items-center gap-2 text-xs text-slate-200 font-medium">
-                  <div className="w-7 h-7 rounded-full bg-[#F15A24]/20 flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-3.5 h-3.5 text-[#F15A24]" />
-                  </div>
-                  <span>All 28 States</span>
-                </div>
-
-                <div className="flex items-center gap-2 text-xs text-slate-200 font-medium">
-                  <div className="w-7 h-7 rounded-full bg-[#25D366]/20 flex items-center justify-center flex-shrink-0">
-                    <Award className="w-3.5 h-3.5 text-[#25D366]" />
-                  </div>
-                  <span>Best Price Assured</span>
-                </div>
-
-                <div className="flex items-center gap-2 text-xs text-slate-200 font-medium">
-                  <div className="w-7 h-7 rounded-full bg-amber-400/20 flex items-center justify-center flex-shrink-0">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-amber-400" />
-                  </div>
-                  <span>Verified Stays</span>
-                </div>
-
-                <div className="flex items-center gap-2 text-xs text-slate-200 font-medium">
-                  <div className="w-7 h-7 rounded-full bg-sky-400/20 flex items-center justify-center flex-shrink-0">
-                    <Headphones className="w-3.5 h-3.5 text-sky-400" />
-                  </div>
-                  <span>24/7 On-Trip Help</span>
-                </div>
-              </div>
-            </div>
-            
+            {/* Sub-headline / Description */}
+            <p className="text-xs sm:text-base md:text-lg text-slate-100 mt-4 sm:mt-5 max-w-4xl mx-auto leading-relaxed text-center font-normal">
+              From the snow-capped mountains of Kashmir to the tropical backwaters of Kerala and regal forts of Rajasthan.
+              Handcrafted domestic holidays with premium stays, certified local guides, and guaranteed best prices.
+            </p>
           </div>
         </div>
       </section>
 
       {/* ===================================================================
           2. FLOATING SEARCH & FILTER BAR
-          - Overlaps the hero bottom for modern visual depth
+          - Clean spacing below hero on mobile, sleek overlap on desktop
           - Search by tour name/destination, filter by category, and sorting
           =================================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 -mt-8 relative z-20">
+      <section className="max-w-7xl mx-auto px-3.5 sm:px-6 mt-8 sm:-mt-8 relative z-20">
         <div className="bg-white rounded-2xl border border-[#E5EAF1] p-4 sm:p-5 shadow-xl">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 items-center">
             {/* Search Box */}
@@ -449,84 +316,49 @@ function TourPackagesContent() {
       </section>
 
       {/* ===================================================================
-          2B. FEATURED KASHMIR WINTER PACKAGES SPOTLIGHT
-          - Dedicated spotlight section on Kashmir winter holidays
-          - Shown on general browsing (/packages)
-          - Includes "View All Kashmir Packages" button linking to /packages?search=kashmir
+          3. MAIN CONTENT: ALL TOUR PACKAGES (MOVED UPPER)
+          - Placed directly after search & filter bar
+          - Heading centered for both mobile & desktop
+          - Responsive Grid: 2 columns on mobile, 2 on tablet, 3 on desktop
+          - Centered CTA button at the bottom of the section
           =================================================================== */}
-      {!loading && !error && !searchQuery && selectedCategory === "all" && kashmirTours.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-2">
-          <div className="bg-gradient-to-br from-[#082B50]/5 via-amber-500/5 to-transparent rounded-3xl p-6 sm:p-8 border border-[#E5EAF1] shadow-xs">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 sm:mb-8">
-              <div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F15A24]/10 text-[#F15A24] text-xs font-bold mb-2">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Handcrafted Winter Specials • December 2026</span>
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-black font-display text-[#082B50] tracking-tight">
-                  Kashmir Winter Tour Packages
-                </h2>
-                <p className="text-xs sm:text-sm text-[#64748B] mt-1 max-w-2xl leading-relaxed">
-                  Glide on shikaras across Dal Lake, take the high-altitude Gulmarg Gondola over snowy pines, and explore Sonamarg glaciers & Pahalgam valleys.
-                </p>
-              </div>
-              <Link
-                href="/packages?search=kashmir"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#082B50] hover:bg-[#F15A24] text-white text-xs font-bold transition-all shadow-xs self-start md:self-auto cursor-pointer"
-              >
-                <span>View All Kashmir Packages</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
-              {kashmirTours.map((tour) => renderTourCard(tour, "Featured Kashmir Section"))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ===================================================================
-          3. MAIN CONTENT: PACKAGE CARDS GRID & STATES
-          - 4 States: Loading, Error, Empty, and Success Grid (3 Desktop, 2 Tablet, 1 Mobile)
-          =================================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
-        {/* Section Heading */}
+      <section className="max-w-7xl mx-auto px-3.5 sm:px-6 py-10 sm:py-14">
+        {/* Section Heading - Centered for Mobile & Desktop */}
         {!loading && !error && filteredTours.length > 0 && (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6 sm:mb-8">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-black text-[#082B50] font-display">
-                {searchQuery ? `Search Results for "${searchQuery}"` : "All Tour Packages"}
-              </h2>
-              <p className="text-xs text-slate-500 font-medium mt-0.5">
-                Showing {filteredTours.length} verified {filteredTours.length === 1 ? "package" : "packages"}
-              </p>
+          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#EAF6FC] text-[#082B50] text-xs font-bold uppercase tracking-wider mb-2.5 border border-[#DCEAF3]">
+              <Compass className="w-3.5 h-3.5 text-[#F15A24]" />
+              <span>HANDCRAFTED HOLIDAY PACKAGES</span>
             </div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#082B50] font-display tracking-tight">
+              {searchQuery ? `Search Results for "${searchQuery}"` : "All Tour Packages"}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1.5 max-w-xl mx-auto">
+              Showing {filteredTours.length} verified {filteredTours.length === 1 ? "tour package" : "tour packages"} across Incredible India. Premium stays, guided tours, and guaranteed best prices.
+            </p>
           </div>
         )}
 
-        {/* 1. LOADING STATE: Skeleton Cards */}
+        {/* 1. LOADING STATE: Skeleton Cards (2-col Mobile Grid) */}
         {loading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-7">
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
-                className="bg-white rounded-2xl border border-[#E5EAF1] overflow-hidden shadow-xs animate-pulse flex flex-col"
+                className="bg-white rounded-xl sm:rounded-2xl border border-[#E5EAF1] overflow-hidden shadow-xs animate-pulse flex flex-col"
               >
                 <div className="aspect-[16/10] w-full bg-slate-200" />
-                <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <div className="h-5 w-24 bg-slate-200 rounded-full" />
-                      <div className="h-5 w-20 bg-slate-200 rounded-full" />
+                <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between space-y-2 sm:space-y-3">
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <div className="flex gap-1.5 sm:gap-2">
+                      <div className="h-3.5 sm:h-5 w-14 sm:w-24 bg-slate-200 rounded-full" />
+                      <div className="h-3.5 sm:h-5 w-12 sm:w-20 bg-slate-200 rounded-full" />
                     </div>
-                    <div className="h-5 bg-slate-200 rounded-md w-4/5" />
-                    <div className="h-3.5 bg-slate-100 rounded-md w-full" />
-                    <div className="h-3.5 bg-slate-100 rounded-md w-3/4" />
+                    <div className="h-4 sm:h-5 bg-slate-200 rounded-md w-4/5" />
                   </div>
-                  <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
-                    <div className="h-6 w-20 bg-slate-200 rounded-md" />
-                    <div className="h-8 w-28 bg-slate-200 rounded-lg" />
+                  <div className="pt-2 sm:pt-3 border-t border-slate-100 flex justify-between items-center">
+                    <div className="h-4 sm:h-6 w-12 sm:w-20 bg-slate-200 rounded-md" />
+                    <div className="h-6 sm:h-8 w-16 sm:w-24 bg-slate-200 rounded-lg" />
                   </div>
                 </div>
               </div>
@@ -586,13 +418,70 @@ function TourPackagesContent() {
           </div>
         )}
 
-        {/* 4. SUCCESS STATE: Responsive Card Grid (Desktop: 3, Tablet: 2, Mobile: 1) */}
+        {/* 4. SUCCESS STATE: Responsive Card Grid (Desktop: 3, Tablet: 2, Mobile: 2) */}
         {!loading && !error && filteredTours.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-7">
             {filteredTours.map((tour) => renderTourCard(tour))}
           </div>
         )}
+
+        {/* Centered CTA Button Below Section (Mobile & Desktop) */}
+        {!loading && !error && filteredTours.length > 0 && (
+          <div className="mt-10 sm:mt-14 text-center">
+            <button
+              type="button"
+              onClick={() => handleOpenEnquiry("Custom Domestic Holiday", "All Packages Bottom CTA")}
+              className="inline-flex items-center justify-center gap-2.5 px-7 py-3 sm:px-8 sm:py-3.5 rounded-full bg-[#082B50] hover:bg-[#F15A24] text-white text-xs sm:text-base font-bold shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer"
+            >
+              <span>Can&apos;t Find Your Package? Plan Custom Trip</span>
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1.5 transition-transform" />
+            </button>
+          </div>
+        )}
       </section>
+
+      {/* ===================================================================
+          4. FEATURED KASHMIR WINTER PACKAGES SPOTLIGHT
+          - Dedicated spotlight section on Kashmir winter holidays
+          - Heading centered on desktop and mobile
+          - Centered CTA button placed below the cards grid
+          - Responsive Grid: 2 cols on Mobile, 2 on Tablet, 3 on Desktop
+          =================================================================== */}
+      {!loading && !error && !searchQuery && selectedCategory === "all" && kashmirTours.length > 0 && (
+        <section className="max-w-7xl mx-auto px-3.5 sm:px-6 pt-4 pb-14">
+          <div className="bg-gradient-to-br from-[#082B50]/5 via-amber-500/5 to-transparent rounded-2xl sm:rounded-3xl p-5 sm:p-10 border border-[#E5EAF1] shadow-xs">
+            {/* Centered Heading for Desktop & Mobile */}
+            <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#F15A24]/10 text-[#F15A24] text-xs font-bold mb-2.5">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Handcrafted Winter Specials</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display text-[#082B50] tracking-tight">
+                Kashmir Winter Tour Packages
+              </h2>
+              <p className="text-xs sm:text-sm text-[#64748B] mt-2 leading-relaxed max-w-xl mx-auto">
+                Glide on shikaras across Dal Lake, take the high-altitude Gulmarg Gondola over snowy pines, and explore Sonamarg glaciers &amp; Pahalgam valleys.
+              </p>
+            </div>
+
+            {/* Responsive Card Grid (2-col mobile, 2-col tablet, 3-col desktop) */}
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-7">
+              {kashmirTours.map((tour) => renderTourCard(tour))}
+            </div>
+
+            {/* Centered Button Below Section */}
+            <div className="mt-8 sm:mt-12 text-center">
+              <Link
+                href="/packages?search=kashmir"
+                className="inline-flex items-center justify-center gap-2.5 px-7 py-3 sm:px-8 sm:py-3.5 rounded-full bg-[#082B50] hover:bg-[#F15A24] text-white text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer"
+              >
+                <span>View All Kashmir Packages</span>
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Interactive Enquiry Modal */}
       <EnquiryModal

@@ -58,7 +58,7 @@ export default function Home() {
         <DestinationsSection onSelectDestination={handleOpenEnquiry} />
 
         {/* Section F: Popular Tour Packages */}
-        <PopularPackages onSelectPackage={handleOpenEnquiry} />
+        <PopularPackages />
 
         {/* Section G: Travel by Interest */}
         <TravelInterests onSelectInterest={handleOpenEnquiry} />

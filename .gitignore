@@ -11,6 +11,7 @@ packages/**/node_modules/
 # Next.js build output
 .next/
 apps/**/.next/
+/public/
 /out/
 /build
 

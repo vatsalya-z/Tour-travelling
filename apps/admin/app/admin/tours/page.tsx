@@ -52,6 +52,7 @@ export default function AdminToursPage() {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   const isConfigured = isSupabaseConfigured();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
   const fetchTours = useCallback(async () => {
     setLoading(true);
@@ -516,6 +517,17 @@ export default function AdminToursPage() {
                     
 
                     <div className="flex items-center gap-2">
+                      <a
+                        href={`${siteUrl}/tours/${tour.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 text-[#082B50] text-xs font-semibold hover:bg-slate-50"
+                        title="View Live Tour Page"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5 text-[#F15A24]" />
+                        <span>View</span>
+                      </a>
+
                       <Link
                         href={`/admin/tours/${tour.id}/edit`}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#082B50] text-white text-xs font-semibold hover:bg-[#123F68] shadow-2xs"
@@ -656,6 +668,16 @@ export default function AdminToursPage() {
                     {/* Actions Menu */}
                     <td className="py-3 px-4 text-right whitespace-nowrap">
                       <div className="relative inline-flex items-center justify-end gap-1">
+                        <a
+                          href={`${siteUrl}/tours/${tour.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 rounded-md text-[#64748B] hover:text-[#F15A24] hover:bg-[#F5F8FC] transition-colors"
+                          title="View Live Tour Page"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+
                         <Link
                           href={`/admin/tours/${tour.id}/edit`}
                           className="p-1.5 rounded-md text-[#64748B] hover:text-[#082B50] hover:bg-[#F5F8FC] transition-colors"

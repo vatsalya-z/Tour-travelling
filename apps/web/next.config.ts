@@ -5,7 +5,8 @@ const ADMIN_URL = process.env.NEXT_PUBLIC_ADMIN_URL || "https://admin.tourtripho
 const nextConfig: NextConfig = {
   experimental: {
     cpus: 1,
-  },
+    agentUpgrade: false,
+  } as any,
   images: {
     remotePatterns: [
       {

@@ -22,11 +22,6 @@ function isValidDateString(str: string): boolean {
   return !isNaN(d.getTime());
 }
 
-/**
- * GET /api/tours/[id]
- * Fetch a specific tour by its UUID.
- * Validates UUID format, checks public visibility rules.
- */
 export async function GET(request: Request, context: RouteContext) {
   try {
     const { id } = await context.params;
@@ -559,6 +554,7 @@ export async function PUT(request: Request, context: RouteContext) {
       "itinerary",
       "inclusions",
       "exclusions",
+      "faqs",
     ] as const;
 
     for (const field of arrayFields) {

@@ -108,6 +108,7 @@ export async function GET(request: Request) {
     const statusParam = searchParams.get("status");
     const featured = searchParams.get("featured");
     const search = searchParams.get("search");
+    const slugParam = searchParams.get("slug");
     const sortBy = searchParams.get("sortBy") || "newest";
 
     // Pagination parameters
@@ -158,6 +159,11 @@ export async function GET(request: Request) {
       if (validStatuses.includes(statusParam.toLowerCase())) {
         query = query.eq("status", statusParam.toLowerCase());
       }
+    }
+
+    // Filter by slug
+    if (slugParam) {
+      query = query.eq("slug", slugParam.trim().toLowerCase());
     }
 
     // Filter by destination_id
@@ -428,6 +434,7 @@ export async function POST(request: Request) {
       itinerary = [],
       inclusions = [],
       exclusions = [],
+      faqs = [],
       pickup_location,
       drop_location,
       cancellation_policy,
@@ -764,6 +771,7 @@ export async function POST(request: Request) {
       itinerary,
       inclusions,
       exclusions,
+      faqs: Array.isArray(faqs) ? faqs : [],
       pickup_location: pickup_location ? String(pickup_location).trim() : null,
       drop_location: drop_location ? String(drop_location).trim() : null,
       cancellation_policy: cancellation_policy ? String(cancellation_policy).trim() : null,
