@@ -37,11 +37,11 @@ export default function CTASection({ onOpenEnquiry }: CTASectionProps) {
               </p>
             </div>
 
-            <div className="flex-shrink-0">
+            <div className="w-full sm:w-auto flex-shrink-0">
               {onOpenEnquiry ? (
                 <button
                   onClick={onOpenEnquiry}
-                  className="inline-flex items-center gap-2.5 bg-[#F15A24] hover:bg-[#d94815] text-white font-bold text-sm sm:text-base px-7 py-3.5 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 group whitespace-nowrap cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-[#F15A24] hover:bg-[#d94815] text-white font-bold text-sm sm:text-base px-7 py-3.5 rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200 group whitespace-nowrap cursor-pointer min-h-[48px]"
                 >
                   <span>Get a Free Travel Plan</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
@@ -49,7 +49,7 @@ export default function CTASection({ onOpenEnquiry }: CTASectionProps) {
               ) : (
                 <a
                   href="#packages"
-                  className="inline-flex items-center gap-2.5 bg-[#F15A24] hover:bg-[#d94815] text-white font-bold text-sm sm:text-base px-7 py-3.5 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 group whitespace-nowrap"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-[#F15A24] hover:bg-[#d94815] text-white font-bold text-sm sm:text-base px-7 py-3.5 rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200 group whitespace-nowrap min-h-[48px]"
                 >
                   <span>Get a Free Travel Plan</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform" />

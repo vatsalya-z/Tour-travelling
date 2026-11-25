@@ -157,7 +157,7 @@ export default function MyEnquiriesPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC] pb-24 md:pb-0">
       <TopBar />
       <Header />
 
@@ -374,7 +374,7 @@ export default function MyEnquiriesPage() {
                             href={`https://wa.me/${waNumber}?text=${waText}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-bold shadow-xs transition-colors"
+                            className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs sm:text-sm font-bold shadow-xs active:scale-95 transition-all min-h-[44px]"
                           >
                             <FaWhatsapp className="w-4 h-4 text-white" />
                             <span>WhatsApp Expert</span>
@@ -382,7 +382,7 @@ export default function MyEnquiriesPage() {
 
                           <a
                             href="tel:+919876543210"
-                            className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#082B50] hover:bg-[#123F68] text-white text-xs font-bold shadow-xs transition-colors"
+                            className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#082B50] hover:bg-[#123F68] text-white text-xs sm:text-sm font-bold shadow-xs active:scale-95 transition-all min-h-[44px]"
                           >
                             <Phone className="w-4 h-4" />
                             <span>Call Support</span>

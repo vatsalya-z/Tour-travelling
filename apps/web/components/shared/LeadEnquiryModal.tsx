@@ -874,6 +874,8 @@ export default function LeadEnquiryModal({
                     <div className="relative flex-1">
                       <input
                         type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
                         name="customer_phone"
                         placeholder="Mobile Number"
                         maxLength={15}
@@ -949,6 +951,7 @@ export default function LeadEnquiryModal({
                     <div className="relative">
                       <input
                         type="number"
+                        inputMode="numeric"
                         min={1}
                         max={99}
                         value={formData.travellers_count}

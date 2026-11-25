@@ -191,7 +191,7 @@ export default function BlogSection() {
         <div className="mt-10 sm:mt-12 text-center">
           <Link
             href="/blog"
-            className="inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full bg-[#082B50] hover:bg-[#F15A24] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all duration-300 group"
+            className="inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full bg-[#082B50] hover:bg-[#F15A24] active:scale-95 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all duration-300 group min-h-[46px] w-full sm:w-auto"
           >
             <span>Explore All Blogs</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />

@@ -11,7 +11,8 @@
     "dev:admin": "npm run dev --workspace=apps/admin",
     "build:web": "npm run build --workspace=apps/web",
     "build:admin": "npm run build --workspace=apps/admin",
-    "build": "npm run build:web && node scripts/sync-root-build.mjs",
+    "build": "npm run build:web",
+    "sync:build": "node scripts/sync-root-build.mjs",
     "start:web": "npm run start --workspace=apps/web",
     "start:admin": "npm run start --workspace=apps/admin",
     "lint": "npm run lint --workspaces --if-present"

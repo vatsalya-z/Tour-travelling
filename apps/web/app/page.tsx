@@ -40,7 +40,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white pb-16 md:pb-0">
+    <div className="min-h-screen flex flex-col bg-white pb-20 md:pb-0">
       {/* Section A: Top Information Bar */}
       <TopBar />
 

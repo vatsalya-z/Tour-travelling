@@ -59,7 +59,7 @@ export default function Newsletter() {
                       if (error) setError("");
                     }}
                     placeholder="Enter your email address"
-                    className="w-full px-4 py-2.5 sm:py-3 text-sm text-[#082B50] placeholder:text-slate-400 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F15A24]/30 focus:border-[#F15A24] transition-all"
+                    className="w-full px-4 py-3 sm:py-3 text-[16px] sm:text-sm text-[#082B50] placeholder:text-slate-400 bg-white border border-slate-300 rounded-xl sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F15A24]/30 focus:border-[#F15A24] transition-all min-h-[46px]"
                   />
                   {error && (
                     <span className="absolute left-0 -bottom-5 text-xs text-rose-500 font-medium">
@@ -69,7 +69,7 @@ export default function Newsletter() {
                 </div>
                 <button
                   type="submit"
-                  className="bg-[#F15A24] hover:bg-[#d94815] text-white font-bold text-sm px-6 py-2.5 sm:py-3 rounded-lg shadow-sm hover:shadow transition-all duration-200 cursor-pointer whitespace-nowrap"
+                  className="bg-[#F15A24] hover:bg-[#d94815] active:scale-95 text-white font-bold text-sm px-6 py-3 rounded-xl sm:rounded-lg shadow-sm hover:shadow transition-all duration-200 cursor-pointer whitespace-nowrap min-h-[46px] w-full sm:w-auto"
                 >
                   Subscribe
                 </button>

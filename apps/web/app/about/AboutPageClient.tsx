@@ -34,7 +34,7 @@ export default function AboutPageClient({ initialContent }: AboutPageClientProps
   const content = initialContent;
 
   return (
-    <div className="min-h-screen flex flex-col bg-white pb-16 md:pb-0">
+    <div className="min-h-screen flex flex-col bg-white pb-24 md:pb-0">
       {/* Top Information Bar */}
       <TopBar />
 

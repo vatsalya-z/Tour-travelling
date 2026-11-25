@@ -20,9 +20,10 @@ function normalizeTour(raw: any): Tour {
 
 /**
  * Fetch a single tour by unique slug.
- * Strictly enforces published status (unpublished/draft tours return null -> 404).
+ * By default strictly enforces published status.
+ * Set allowDraft = true for admin previews.
  */
-export async function getTourBySlug(slug: string): Promise<Tour | null> {
+export async function getTourBySlug(slug: string, allowDraft: boolean = false): Promise<Tour | null> {
   if (!slug || typeof slug !== "string") return null;
   const cleanSlug = slug.trim().toLowerCase();
 
@@ -30,12 +31,16 @@ export async function getTourBySlug(slug: string): Promise<Tour | null> {
     const { client } = getSupabaseApiClient();
 
     if (client) {
-      const { data, error } = await client
+      let query = client
         .from("tours")
         .select("*, destination:destinations(*)")
-        .eq("slug", cleanSlug)
-        .eq("status", "published")
-        .maybeSingle();
+        .eq("slug", cleanSlug);
+
+      if (!allowDraft) {
+        query = query.eq("status", "published");
+      }
+
+      const { data, error } = await query.maybeSingle();
 
       if (!error && data) {
         return normalizeTour(data);
@@ -46,9 +51,10 @@ export async function getTourBySlug(slug: string): Promise<Tour | null> {
   }
 
   // Fallback to local default data (if Supabase is unreachable or unconfigured)
-  const fallback = DEFAULT_TOURS.find(
-    (t) => t.slug.toLowerCase() === cleanSlug && t.status === "published"
-  );
+  const fallback = DEFAULT_TOURS.find((t) => {
+    const matchSlug = t.slug.toLowerCase() === cleanSlug;
+    return allowDraft ? matchSlug : matchSlug && t.status === "published";
+  });
 
   return fallback ? normalizeTour(fallback) : null;
 }
@@ -154,14 +160,14 @@ export async function getAllPublishedTourSlugs(): Promise<string[]> {
 }
 
 /**
- * Returns exactly four distinct images for a package gallery.
- * 1. Main cover image
- * 2. Destination cover or first gallery image
- * 3. Itinerary day image or second gallery image
- * 4. Experience/sightseeing image
- * Avoids duplicates; uses clean fallback images if fewer than 4 are provided.
+ * Returns all genuine unique images for a package.
+ * Gathers from:
+ * 1. Package cover_image
+ * 2. Package gallery_images
+ * 3. Genuine itinerary day images
+ * Does not repeat images and does not use unrelated destination images.
  */
-export function getPackageFourImages(tour: Tour): string[] {
+export function getPackageGenuineImages(tour: Tour): string[] {
   const images: string[] = [];
   const seen = new Set<string>();
 
@@ -173,45 +179,37 @@ export function getPackageFourImages(tour: Tour): string[] {
     images.push(clean);
   };
 
-  // 1. Main cover
+  // 1. Main cover image
   add(tour.cover_image);
 
-  // 2. Destination cover image
-  add(tour.destination?.cover_image);
-
-  // 3. Gallery images
+  // 2. Package gallery images
   if (Array.isArray(tour.gallery_images)) {
     for (const g of tour.gallery_images) {
-      if (images.length >= 4) break;
       add(g);
     }
   }
 
-  // 4. Itinerary day images
-  if (images.length < 4 && Array.isArray(tour.itinerary)) {
+  // 3. Genuine itinerary images
+  if (Array.isArray(tour.itinerary)) {
     for (const day of tour.itinerary) {
-      if (images.length >= 4) break;
       if (day.image) add(day.image);
     }
   }
 
-  // 5. Fallback pool if still fewer than 4 images
-  const fallbackPool = [
-    "/images/packages/kashmir-dal-lake-winter.webp",
-    "/images/packages/kashmir-gulmarg-gondola-snow.webp",
-    "/images/packages/kashmir-sonamarg-glacier-winter.webp",
-    "/images/packages/kashmir-pahalgam-valley-winter.webp",
-    "/images/packages/kashmir-houseboat-winter.webp",
-    "/images/packages/himachal.jpg",
-    "/images/packages/kerala.jpg",
-    "/images/packages/rajasthan.jpg",
-    "/images/packages/goa.jpg",
-  ];
-
-  for (const fb of fallbackPool) {
-    if (images.length >= 4) break;
-    add(fb);
+  // Fallback only if no images exist at all and tour is specifically Kashmir or Odisha
+  if (images.length === 0) {
+    if (tour.destination?.cover_image) {
+      add(tour.destination.cover_image);
+    } else if ((tour.state || "").toLowerCase().includes("kashmir") || tour.name.toLowerCase().includes("kashmir")) {
+      add("/images/packages/kashmir-4n5d-cover.webp");
+    } else if ((tour.state || "").toLowerCase().includes("odisha") || tour.name.toLowerCase().includes("odisha")) {
+      add("/images/packages/odisha-golden-triangle-cover.webp");
+    }
   }
 
-  return images.slice(0, 4);
+  return images;
+}
+
+export function getPackageFourImages(tour: Tour): string[] {
+  return getPackageGenuineImages(tour);
 }

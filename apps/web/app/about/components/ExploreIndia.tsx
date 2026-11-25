@@ -70,7 +70,7 @@ export default function ExploreIndia({ data }: ExploreIndiaProps) {
         <div className="mt-10 sm:mt-12 text-center">
           <Link
             href="/packages"
-            className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-[#082B50] hover:bg-[#F15A24] text-white text-sm sm:text-base font-bold shadow-md hover:shadow-lg transition-all duration-300 group"
+            className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-[#082B50] hover:bg-[#F15A24] active:scale-95 text-white text-sm sm:text-base font-bold shadow-md hover:shadow-lg transition-all duration-300 group min-h-[48px] w-full sm:w-auto"
           >
             <span>Explore All Packages</span>
             <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1.5 transition-transform" />

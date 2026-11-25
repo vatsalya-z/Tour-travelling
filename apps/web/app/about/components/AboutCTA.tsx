@@ -32,10 +32,10 @@ export default function AboutCTA({ data }: AboutCTAProps) {
           </p>
         )}
 
-        <div>
+        <div className="flex justify-center">
           <Link
             href={data.button_link || "/packages"}
-            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#F15A24] text-white font-bold text-sm sm:text-base hover:bg-[#d94a18] transition-all shadow-lg hover:shadow-orange-500/20"
+            className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-[#F15A24] text-white font-bold text-sm sm:text-base hover:bg-[#d94a18] active:scale-95 transition-all shadow-lg hover:shadow-orange-500/20 min-h-[48px] w-full sm:w-auto"
           >
             <span>{data.button_text || "Explore Packages"}</span>
             <ArrowRight className="w-4 h-4" />

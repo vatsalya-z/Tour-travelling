@@ -89,6 +89,54 @@ function TourPackagesContent() {
     return Array.from(set);
   }, [tours]);
 
+  // Location-aware Hero Configuration based on active search / destination
+  const heroConfig = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+
+    if (q.includes("odisha") || q.includes("puri") || q.includes("konark") || q.includes("bhubaneswar")) {
+      return {
+        locationKey: "odisha",
+        tag: "SOUL OF ODISHA · TEMPLE ARCHITECTURE, ART & NATURE",
+        title: "Explore Soulful Odisha",
+        highlight: "Tour Packages",
+        description:
+          "Discover ancient Kalinga temple architecture, Konark Sun Temple, Raghurajpur artisan villages, Sambalpuri Ikat handlooms, Chilika wetland birds, and pristine golden beaches.",
+        image: "/images/packages/packages-hero-odisha.webp",
+        alt: "Realistic panoramic view of Odisha Konark Sun Temple and Heritage",
+        breadcrumb: "Odisha",
+        badgeStyle: "bg-amber-500/20 text-amber-200 border-amber-400/30",
+      };
+    }
+
+    if (q.includes("kashmir") || q.includes("srinagar") || q.includes("gulmarg") || q.includes("pahalgam")) {
+      return {
+        locationKey: "kashmir",
+        tag: "PARADISE ON EARTH · WINTER & SUMMER SPECIALS",
+        title: "Explore Handcrafted Kashmir",
+        highlight: "Tour Packages",
+        description:
+          "Glide on Dal Lake shikaras, ride the high-altitude Gulmarg Gondola over snowy pines, and explore Sonamarg glaciers and lush Pahalgam valleys with certified local guides.",
+        image: "/images/packages/packages-hero-kashmir.webp",
+        alt: "Realistic scenic panoramic view of Kashmir snow mountains and valleys",
+        breadcrumb: "Kashmir",
+        badgeStyle: "bg-sky-500/20 text-sky-200 border-sky-400/30",
+      };
+    }
+
+    return {
+      locationKey: "india",
+      tag: "HANDCRAFTED DOMESTIC HOLIDAYS · 28 STATES OF INDIA",
+      title: "Explore India’s Most Popular",
+      highlight: "Tour Packages",
+      description:
+        "From the golden temples & craft villages of Odisha and snow-capped peaks of Kashmir to the backwaters of Kerala and regal forts of Rajasthan. Premium stays, certified guides, and best price guarantee.",
+      image: "/images/packages/packages-hero-banner.jpg",
+      alt: "Scenic Indian Mountain Landscape and Travel Packages",
+      breadcrumb: null,
+      badgeStyle: "bg-white/10 text-slate-200 border-white/15",
+    };
+  }, [searchQuery]);
+
   // Filtered & Sorted Tours
   const filteredTours = useMemo(() => {
     return tours
@@ -130,6 +178,24 @@ function TourPackagesContent() {
     });
   }, [tours]);
 
+  // Featured Odisha Tours (Culture • Art • Craft • Heritage • Nature)
+  const odishaTours = useMemo(() => {
+    return tours
+      .filter((tour) => {
+        if (tour.status !== "published") return false;
+        const dName = (tour.destination?.name || "").toLowerCase();
+        const sName = (tour.state || "").toLowerCase();
+        const tName = tour.name.toLowerCase();
+        return sName.includes("odisha") || dName.includes("odisha") || tName.includes("odisha");
+      })
+      .sort((a, b) => {
+        if (a.featured && !b.featured) return -1;
+        if (!a.featured && b.featured) return 1;
+        return new Date(b.created_at || "").getTime() - new Date(a.created_at || "").getTime();
+      })
+      .slice(0, 6);
+  }, [tours]);
+
   const handleOpenEnquiry = (tour: Tour | string, sourceCta?: string) => {
     if (typeof tour === "string") {
       setSelectedTourName(tour);
@@ -161,7 +227,7 @@ function TourPackagesContent() {
     return (
       <article
         key={tour.id}
-        className="bg-white rounded-xl sm:rounded-2xl border border-[#E5EAF1] shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col overflow-hidden group"
+        className="bg-white rounded-2xl border border-[#E5EAF1] shadow-xs hover:shadow-xl hover:-translate-y-1.5 active:scale-[0.98] transition-all duration-300 flex flex-col overflow-hidden group"
       >
         {/* 1. Package Cover Image */}
         <div className="relative aspect-[16/10] w-full overflow-hidden flex-shrink-0 bg-slate-100">
@@ -174,10 +240,15 @@ function TourPackagesContent() {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 p-2 sm:p-4 text-center">
-              <Compass className="w-6 h-6 sm:w-8 sm:h-8 text-slate-400 mb-1 sm:mb-2" />
-              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">
+            <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[#082B50]/5 via-orange-500/5 to-slate-100 p-3 sm:p-4 text-center relative group-hover:scale-105 transition-transform duration-500">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white shadow-xs flex items-center justify-center mb-1.5 sm:mb-2 text-[#082B50] group-hover:text-[#F15A24] transition-colors">
+                <Compass className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <span className="text-[11px] sm:text-xs font-bold text-[#082B50] line-clamp-1 max-w-[90%]">
                 {tour.name}
+              </span>
+              <span className="text-[10px] text-slate-400 mt-0.5 font-medium">
+                {tour.days}D / {tour.nights}N • {tour.state || "Tour Package"}
               </span>
             </div>
           )}
@@ -185,14 +256,14 @@ function TourPackagesContent() {
 
         {/* 2. Package Name & 3. View Details Button */}
         <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between gap-3">
-          <h2 className="font-bold sm:font-extrabold text-[#082B50] text-sm sm:text-base group-hover:text-[#F15A24] transition-colors line-clamp-2 leading-snug">
+          <h2 className="font-bold sm:font-extrabold text-[#082B50] text-xs sm:text-base group-hover:text-[#F15A24] transition-colors line-clamp-2 leading-snug min-h-[34px] sm:min-h-0">
             {tour.name}
           </h2>
 
           <div className="mt-2 pt-3 border-t border-[#E5EAF1]">
             <Link
               href={`/tours/${tour.slug}`}
-              className="inline-flex items-center justify-center gap-1 sm:gap-1.5 px-3.5 py-2 rounded-lg sm:rounded-xl bg-[#082B50] hover:bg-[#F15A24] text-white text-xs sm:text-sm font-bold transition-all shadow-xs group/btn cursor-pointer w-full text-center"
+              className="inline-flex items-center justify-center gap-1 sm:gap-1.5 px-3 py-2.5 sm:py-2 rounded-xl bg-[#082B50] hover:bg-[#F15A24] text-white text-xs sm:text-sm font-bold transition-all shadow-xs group/btn cursor-pointer w-full text-center min-h-[44px] active:scale-95"
             >
               <span>View Details</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />
@@ -210,20 +281,22 @@ function TourPackagesContent() {
         {/* Full-bleed Panoramic Scenic Background Image */}
         <div className="absolute inset-0 z-0 select-none overflow-hidden">
           <Image
-            src="/images/packages/packages-hero-banner.jpg"
-            alt="Scenic Indian Mountain Landscape and Travel Packages"
+            key={heroConfig.image}
+            src={heroConfig.image}
+            alt={heroConfig.alt}
             fill
             priority
             sizes="100vw"
-            className="object-cover object-center w-full h-full"
+            className="object-cover object-center w-full h-full transition-all duration-700 ease-in-out"
           />
-          
+          {/* Flat translucent backdrop without gradients */}
+          <div className="absolute inset-0 bg-black/40" />
         </div>
 
         {/* Hero Content Container - Broad & Expansive Full-width Layout */}
-        <div className="relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 py-16 sm:py-20 lg:py-28 min-h-[360px] sm:min-h-[440px] lg:min-h-[500px] flex flex-col justify-center items-center">
-          {/* Breadcrumb Navigation Pill */}
-          <div className="flex items-center justify-center gap-2 mb-4 sm:mb-6">
+        <div className="relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 py-10 sm:py-20 lg:py-28 min-h-[280px] sm:min-h-[440px] lg:min-h-[500px] flex flex-col justify-center items-center">
+          {/* Breadcrumb Navigation Pill - Hidden on mobile view, visible on tablet & desktop */}
+          <div className="hidden sm:flex items-center justify-center gap-2 mb-3 sm:mb-6">
             <nav
               aria-label="Breadcrumb"
               className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-slate-200"
@@ -232,21 +305,39 @@ function TourPackagesContent() {
                 Home
               </Link>
               <span className="text-slate-400 text-xs">/</span>
-              <span className="text-[#F15A24] font-semibold">Tour Packages</span>
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="hover:text-[#F15A24] transition-colors font-semibold cursor-pointer"
+              >
+                Tour Packages
+              </button>
+              {heroConfig.breadcrumb && (
+                <>
+                  <span className="text-slate-400 text-xs">/</span>
+                  <span className="text-[#F15A24] font-semibold">{heroConfig.breadcrumb}</span>
+                </>
+              )}
             </nav>
           </div>
 
           <div className="w-full max-w-6xl mx-auto text-center flex flex-col items-center">
+            {/* Dynamic Location Badge - No react-lucide icon */}
+            <div
+              className={`inline-flex items-center px-4 py-1.5 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider mb-3.5 sm:mb-4 border backdrop-blur-md shadow-xs transition-all duration-300 ${heroConfig.badgeStyle}`}
+            >
+              <span>{heroConfig.tag}</span>
+            </div>
+
             {/* Main Headline (Expansive & Grand Width) */}
-            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-display tracking-tight text-white leading-[1.12] text-center w-full max-w-5xl">
-              Explore India’s Most Popular{" "}
-              <span className="text-[#F15A24] block sm:inline">Tour Packages</span>
+            <h1 className="text-2xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-display tracking-tight text-white leading-[1.15] text-center w-full max-w-5xl">
+              {heroConfig.title}{" "}
+              <span className="text-[#F15A24] block sm:inline">{heroConfig.highlight}</span>
             </h1>
 
             {/* Sub-headline / Description */}
-            <p className="text-xs sm:text-base md:text-lg text-slate-100 mt-4 sm:mt-5 max-w-4xl mx-auto leading-relaxed text-center font-normal">
-              From the snow-capped mountains of Kashmir to the tropical backwaters of Kerala and regal forts of Rajasthan.
-              Handcrafted domestic holidays with premium stays, certified local guides, and guaranteed best prices.
+            <p className="text-xs sm:text-base md:text-lg text-slate-100 mt-2.5 sm:mt-5 max-w-4xl mx-auto leading-relaxed text-center font-normal">
+              {heroConfig.description}
             </p>
           </div>
         </div>
@@ -257,9 +348,9 @@ function TourPackagesContent() {
           - Clean spacing below hero on mobile, sleek overlap on desktop
           - Search by tour name/destination, filter by category, and sorting
           =================================================================== */}
-      <section className="max-w-7xl mx-auto px-3.5 sm:px-6 mt-8 sm:-mt-8 relative z-20">
-        <div className="bg-white rounded-2xl border border-[#E5EAF1] p-4 sm:p-5 shadow-xl">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 items-center">
+      <section className="max-w-7xl mx-auto px-3.5 sm:px-6 mt-4 sm:-mt-8 relative z-20">
+        <div className="bg-white rounded-2xl border border-[#E5EAF1] p-3.5 sm:p-5 shadow-xl">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5 sm:gap-3.5 items-center">
             {/* Search Box */}
             <div className="lg:col-span-5 relative">
               <Search className="w-4 h-4 text-[#94A3B8] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -268,16 +359,16 @@ function TourPackagesContent() {
                 placeholder="Search by tour name, destination, state..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-9 py-2.5 text-xs bg-[#F8FAFC] border border-[#E5EAF1] rounded-xl text-[#172B4D] placeholder-[#94A3B8] focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-[#082B50]/20 focus:border-[#082B50] transition-all font-medium"
+                className="w-full pl-10 pr-9 py-3 sm:py-2.5 text-[16px] sm:text-xs bg-[#F8FAFC] border border-[#E5EAF1] rounded-xl text-[#172B4D] placeholder-[#94A3B8] focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-[#082B50]/20 focus:border-[#082B50] transition-all font-medium min-h-[44px]"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
                   title="Clear Search"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-4 h-4" />
                 </button>
               )}
             </div>
@@ -287,7 +378,7 @@ function TourPackagesContent() {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-xs bg-[#F8FAFC] border border-[#E5EAF1] rounded-xl text-[#172B4D] focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-[#082B50]/20 focus:border-[#082B50] cursor-pointer font-medium"
+                className="w-full px-3.5 py-3 sm:py-2.5 text-[16px] sm:text-xs bg-[#F8FAFC] border border-[#E5EAF1] rounded-xl text-[#172B4D] focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-[#082B50]/20 focus:border-[#082B50] cursor-pointer font-medium min-h-[44px]"
               >
                 <option value="all">All Tour Categories</option>
                 {categories.map((c) => (
@@ -303,7 +394,7 @@ function TourPackagesContent() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="w-full px-3.5 py-2.5 text-xs bg-[#F8FAFC] border border-[#E5EAF1] rounded-xl text-[#172B4D] focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-[#082B50]/20 focus:border-[#082B50] cursor-pointer font-medium"
+                className="w-full px-3.5 py-3 sm:py-2.5 text-[16px] sm:text-xs bg-[#F8FAFC] border border-[#E5EAF1] rounded-xl text-[#172B4D] focus:outline-hidden focus:bg-white focus:ring-2 focus:ring-[#082B50]/20 focus:border-[#082B50] cursor-pointer font-medium min-h-[44px]"
               >
                 <option value="newest">Sort: Newly Added</option>
                 <option value="price-asc">Price: Low to High</option>
@@ -427,11 +518,11 @@ function TourPackagesContent() {
 
         {/* Centered CTA Button Below Section (Mobile & Desktop) */}
         {!loading && !error && filteredTours.length > 0 && (
-          <div className="mt-10 sm:mt-14 text-center">
+          <div className="mt-8 sm:mt-14 text-center px-2">
             <button
               type="button"
               onClick={() => handleOpenEnquiry("Custom Domestic Holiday", "All Packages Bottom CTA")}
-              className="inline-flex items-center justify-center gap-2.5 px-7 py-3 sm:px-8 sm:py-3.5 rounded-full bg-[#082B50] hover:bg-[#F15A24] text-white text-xs sm:text-base font-bold shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 sm:px-8 sm:py-3.5 rounded-full bg-[#082B50] hover:bg-[#F15A24] text-white text-xs sm:text-base font-bold shadow-md hover:shadow-lg active:scale-95 transition-all duration-300 group cursor-pointer min-h-[48px]"
             >
               <span>Can&apos;t Find Your Package? Plan Custom Trip</span>
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1.5 transition-transform" />
@@ -483,6 +574,51 @@ function TourPackagesContent() {
         </section>
       )}
 
+      {/* ===================================================================
+          5. FEATURED ODISHA TOURS SPOTLIGHT
+          - Heading: "Explore Odisha Beyond Tourism"
+          - Subtext: "Culture • Art • Craft • Heritage • Nature"
+          - Dynamically fetched from DB (state = 'Odisha' AND status = 'published')
+          - Shows featured first, max 3-4 cards
+          - Button "View All Odisha Tours" redirecting to /odisha-tours
+          - If no published Odisha tours, hides the section
+          =================================================================== */}
+      {!loading && !error && !searchQuery && selectedCategory === "all" && odishaTours.length > 0 && (
+        <section className="max-w-7xl mx-auto px-3.5 sm:px-6 pt-0 pb-14">
+          <div className="bg-gradient-to-br from-[#082B50]/5 via-amber-500/5 to-transparent rounded-2xl sm:rounded-3xl p-5 sm:p-10 border border-[#E5EAF1] shadow-xs">
+            {/* Centered Heading */}
+            <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#F15A24]/10 text-[#F15A24] text-xs font-bold mb-2.5">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Culture • Art • Craft • Heritage • Nature</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display text-[#082B50] tracking-tight">
+                Explore Odisha Beyond Tourism
+              </h2>
+              <p className="text-xs sm:text-sm text-[#64748B] mt-2 leading-relaxed max-w-xl mx-auto">
+                Discover ancient temple architecture, artisan village workshops, Sambalpuri and Ikat handlooms, tribal traditions and pristine coastal wetlands.
+              </p>
+            </div>
+
+            {/* Responsive Card Grid (2-col mobile, 2-col tablet, 3-col desktop) */}
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-7">
+              {odishaTours.map((tour) => renderTourCard(tour))}
+            </div>
+
+            {/* Centered Button Below Section */}
+            <div className="mt-8 sm:mt-12 text-center">
+              <Link
+                href="/packages?search=odisha"
+                className="inline-flex items-center justify-center gap-2.5 px-7 py-3 sm:px-8 sm:py-3.5 rounded-full bg-[#082B50] hover:bg-[#F15A24] text-white text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer"
+              >
+                <span>View All Odisha Packages</span>
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Interactive Enquiry Modal */}
       <EnquiryModal
         isOpen={modalOpen}
@@ -499,7 +635,7 @@ function TourPackagesContent() {
 
 export default function TourPackagesPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC] pb-16 md:pb-0 font-sans text-[#172B4D]">
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC] pb-24 md:pb-0 font-sans text-[#172B4D]">
       {/* Top Notification Bar */}
       <TopBar />
 

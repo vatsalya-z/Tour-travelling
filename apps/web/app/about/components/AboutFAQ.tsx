@@ -44,7 +44,7 @@ export default function AboutFAQ({ data }: AboutFAQProps) {
                 <button
                   type="button"
                   onClick={() => toggle(idx)}
-                  className="w-full px-5 sm:px-6 py-4 sm:py-5 text-left flex items-center justify-between gap-4 hover:bg-[#F5F8FC]/50 transition-colors focus:outline-none"
+                  className="w-full px-5 sm:px-6 py-4 sm:py-5 text-left flex items-center justify-between gap-4 hover:bg-[#F5F8FC]/50 transition-colors focus:outline-none min-h-[52px] cursor-pointer"
                   aria-expanded={isOpen}
                 >
                   <span className="font-bold text-[#082B50] text-base sm:text-lg">

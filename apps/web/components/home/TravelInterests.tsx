@@ -133,7 +133,7 @@ export default function TravelInterests({ onSelectInterest }: TravelInterestsPro
           </div>
 
           {/* Mobile View (< md) */}
-          <div className="grid grid-cols-3 gap-y-4 gap-x-2 md:hidden">
+          <div className="grid grid-cols-3 gap-2.5 sm:gap-3 md:hidden">
             {interests.map((item) => {
               const Icon = item.icon;
               return (
@@ -141,9 +141,9 @@ export default function TravelInterests({ onSelectInterest }: TravelInterestsPro
                   key={item.name}
                   type="button"
                   onClick={() => onSelectInterest?.(item.name)}
-                  className="p-2 flex flex-col items-center text-center rounded-xl bg-white/70 backdrop-blur-xs border border-white/60 shadow-2xs group active:scale-95 transition-transform"
+                  className="py-3 px-1.5 flex flex-col items-center text-center rounded-2xl bg-white/80 backdrop-blur-xs border border-white/80 shadow-xs group active:scale-90 transition-transform min-h-[72px] justify-center cursor-pointer"
                 >
-                  <div className={`w-8 h-8 flex items-center justify-center ${item.color} mb-1`}>
+                  <div className={`w-8 h-8 flex items-center justify-center ${item.color} mb-1 group-hover:scale-110 transition-transform`}>
                     <Icon className="w-5 h-5" />
                   </div>
                   <div className="flex flex-col text-[11px] font-extrabold text-[#082B50] group-hover:text-[#F15A24] leading-tight">

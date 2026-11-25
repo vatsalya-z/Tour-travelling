@@ -7,17 +7,22 @@ interface TourPageProps {
   params: Promise<{
     slug: string;
   }>;
+  searchParams?: Promise<{
+    preview?: string;
+  }>;
 }
 
 /**
  * Dynamic SEO Metadata Generation for individual tour detail page.
  * Uses actual tour data from Supabase backend.
  */
-export async function generateMetadata({ params }: TourPageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: TourPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const tour = await getTourBySlug(slug);
+  const sParams = searchParams ? await searchParams : {};
+  const isPreview = sParams.preview === "true";
+  const tour = await getTourBySlug(slug, isPreview);
 
-  if (!tour || tour.status !== "published") {
+  if (!tour || (!isPreview && tour.status !== "published")) {
     return {
       title: "Tour Package Not Found | TourTripHolidays",
       description: "The requested tour package could not be found or is no longer available.",
@@ -36,7 +41,9 @@ export async function generateMetadata({ params }: TourPageProps): Promise<Metad
 
   const ogImage = tour.cover_image?.startsWith("http")
     ? tour.cover_image
-    : `${siteUrl}${tour.cover_image || "/images/packages/kashmir-4n5d-cover.webp"}`;
+    : tour.cover_image
+    ? `${siteUrl}${tour.cover_image}`
+    : `${siteUrl}/images/packages/kashmir-4n5d-cover.webp`;
 
   return {
     title,
@@ -75,12 +82,14 @@ export async function generateMetadata({ params }: TourPageProps): Promise<Metad
  * Fetches tour package by slug from Supabase.
  * Returns 404 if tour doesn't exist or is unpublished/draft.
  */
-export default async function TourDetailPage({ params }: TourPageProps) {
+export default async function TourDetailPage({ params, searchParams }: TourPageProps) {
   const { slug } = await params;
-  const tour = await getTourBySlug(slug);
+  const sParams = searchParams ? await searchParams : {};
+  const isPreview = sParams.preview === "true";
+  const tour = await getTourBySlug(slug, isPreview);
 
   // Return proper 404 if package does not exist or is unpublished
-  if (!tour || tour.status !== "published") {
+  if (!tour || (!isPreview && tour.status !== "published")) {
     notFound();
   }
 

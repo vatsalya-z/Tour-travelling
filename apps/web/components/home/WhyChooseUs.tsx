@@ -45,26 +45,26 @@ export default function WhyChooseUs() {
         {/* Horizontal Layout: 4 Cards on Left/Center + Traveler Mountain Artwork on Right */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-stretch">
           {/* 4 Feature Cards (spanning 9 cols on desktop) */}
-          <div className="lg:col-span-9 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="lg:col-span-9 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
             {features.map((feat, index) => {
               const Icon = feat.icon;
               return (
                 <div
                   key={index}
-                  className="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_4px_16px_rgba(8,43,80,0.06)] border border-sky-100/80 flex flex-col items-center text-center justify-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-orange-200 group h-full"
+                  className="bg-white rounded-2xl p-3 sm:p-5 shadow-[0_4px_16px_rgba(8,43,80,0.06)] border border-sky-100/80 flex flex-col items-center text-center justify-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-orange-200 group h-full"
                 >
                   {/* Icon */}
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-[#F15A24] mb-2 sm:mb-2.5 group-hover:scale-110 transition-transform duration-300">
-                    <Icon className="w-6 h-6 sm:w-7 sm:h-7" />
+                  <div className="w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center text-[#F15A24] mb-1.5 sm:mb-2.5 group-hover:scale-110 transition-transform duration-300">
+                    <Icon className="w-5 h-5 sm:w-7 sm:h-7" />
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-sm sm:text-[15px] font-extrabold text-[#082B50] mb-1.5 leading-snug group-hover:text-[#F15A24] transition-colors">
+                  <h3 className="text-xs sm:text-[15px] font-extrabold text-[#082B50] mb-1 leading-snug group-hover:text-[#F15A24] transition-colors">
                     {feat.title}
                   </h3>
 
                   {/* Description */}
-                  <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                  <p className="text-[11px] sm:text-xs text-slate-500 font-medium leading-relaxed">
                     {feat.description}
                   </p>
                 </div>

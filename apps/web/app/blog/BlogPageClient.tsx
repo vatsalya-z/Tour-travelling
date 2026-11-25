@@ -66,7 +66,7 @@ export default function BlogPageClient() {
   }, [blogs, searchQuery, selectedCategory]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white pb-16 md:pb-0 font-sans">
+    <div className="min-h-screen flex flex-col bg-white pb-24 md:pb-0 font-sans">
       {/* TopBar & Navigation Header */}
       <TopBar />
       <Header />
@@ -123,6 +123,30 @@ export default function BlogPageClient() {
                 Handcrafted travel highlights, cultural insights, and inspiring destination stories from across Incredible India.
               </p>
             </div>
+
+            {/* Category Filter Pills (Horizontal Scroll on Mobile) */}
+            {categories.length > 1 && (
+              <div className="flex items-center gap-2 overflow-x-auto touch-scroll no-scrollbar pb-3 mb-6 -mx-3.5 px-3.5 sm:mx-0 sm:px-0 sm:flex-wrap sm:justify-center">
+                {categories.map((cat) => {
+                  const isSelected = selectedCategory === cat;
+                  const label = cat === "all" ? "All Stories" : cat;
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`shrink-0 px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all min-h-[38px] active:scale-95 cursor-pointer ${
+                        isSelected
+                          ? "bg-[#082B50] text-white shadow-sm"
+                          : "bg-white text-slate-700 border border-[#DCEAF3] hover:border-[#082B50]/30"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Mobile Responsive Grid: 2 columns on mobile, 2 cols on tablet, 3 cols on desktop */}
             {loading ? (

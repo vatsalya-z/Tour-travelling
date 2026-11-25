@@ -85,7 +85,7 @@ export default function TravelApproach({ data }: TravelApproachProps) {
         <div className="mt-12 sm:mt-16 text-center">
           <Link
             href="/packages"
-            className="inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full bg-[#F15A24] hover:bg-[#d94815] text-white text-sm sm:text-base font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 group"
+            className="inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full bg-[#F15A24] hover:bg-[#d94815] active:scale-95 text-white text-sm sm:text-base font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 group min-h-[48px] w-full sm:w-auto"
           >
             <span>Explore Tour Packages</span>
             <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />

@@ -27,6 +27,7 @@ export default function Footer() {
 
   const popularDestinations = [
     { name: "Kashmir Tour Packages", href: "/packages?search=kashmir" },
+    { name: "Odisha Tour Packages", href: "/odisha-tours" },
     { name: "Himachal Tour Packages", href: "/packages?search=himachal" },
     { name: "Kerala Tour Packages", href: "/packages?search=kerala" },
     { name: "Rajasthan Tour Packages", href: "/packages?search=rajasthan" },
@@ -40,9 +41,9 @@ export default function Footer() {
         {/* Main 4 Columns */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 pb-12 border-b border-[#123F68]/80">
           {/* Column 1: Brand & Bio (4 cols) */}
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-4 text-center sm:text-left flex flex-col items-center sm:items-start">
             <Logo variant="dark" className="mb-4" />
-            <p className="text-slate-300 text-sm leading-relaxed mt-3 max-w-sm">
+            <p className="text-slate-300 text-sm leading-relaxed mt-3 max-w-sm mx-auto sm:mx-0">
               Your trusted domestic travel partner for unforgettable journeys across all 28 states of India. Discover beautiful destinations, customized packages and memorable experiences with TourTripHolidays.
             </p>
           </div>
@@ -52,7 +53,7 @@ export default function Footer() {
             <h4 className="text-base font-bold text-white tracking-wide mb-4 relative pb-2 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-10 after:h-[2px] after:bg-[#F15A24]">
               Quick Links
             </h4>
-            <ul className="space-y-2 text-sm">
+            <ul className="grid grid-cols-2 sm:grid-cols-1 gap-x-4 gap-y-2 text-sm">
               {quickLinks.map((link) => (
                 <li key={link.name}>
                   <Link

@@ -4,8 +4,23 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Logo from "./Logo";
-import { ChevronDown, Menu, X, User as UserIcon, LogOut, LayoutDashboard, FileText } from "lucide-react";
-import { FaWhatsapp } from "react-icons/fa6";
+import {
+  ChevronDown,
+  ChevronRight,
+  Menu,
+  X,
+  User as UserIcon,
+  LogOut,
+  LayoutDashboard,
+  FileText,
+  Compass,
+  MapPin,
+  Sparkles,
+  BookOpen,
+  Info,
+  Phone,
+} from "lucide-react";
+import { FaWhatsapp, FaPhone } from "react-icons/fa6";
 import AuthModal from "./AuthModal";
 import { useAuth } from "@/features/auth/AuthContext";
 
@@ -21,6 +36,7 @@ export default function Header() {
 
   const { user, profile, isAdmin, signOut } = useAuth();
 
+  // Scroll detection for sticky header shadow
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 20) {
@@ -44,8 +60,26 @@ export default function Header() {
     };
   }, []);
 
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   const packageLinks = [
     { name: "All Tour Packages", href: "/packages" },
+    { name: "Odisha Tour Packages", href: "/packages?search=odisha" },
     { name: "Kashmir Tour Packages", href: "/packages?search=kashmir" },
     { name: "Himachal Tour Packages", href: "/packages?search=himachal" },
     { name: "Kerala Tour Packages", href: "/packages?search=kerala" },
@@ -300,56 +334,197 @@ export default function Header() {
             )}
           </div>
 
-          {/* Mobile Hamburger Button */}
-          <div className="flex items-center gap-2 lg:hidden">
-           
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-[#082B50] hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-              aria-label="Toggle Navigation Menu"
+          {/* ===================================================================
+              Mobile App-Bar Actions:
+              - Direct Call shortcut
+              - Direct WhatsApp shortcut
+              - 44x44px Touch-friendly Hamburger Button
+              =================================================================== */}
+          <div className="flex items-center gap-1.5 sm:gap-2 lg:hidden">
+            <a
+              href="tel:+919876543210"
+              aria-label="Call +91 98765 43210"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#EAF6FC] text-[#082B50] flex items-center justify-center hover:bg-[#DCEAF3] active:scale-95 transition-transform"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              <Phone className="w-4 h-4 text-[#082B50]" />
+            </a>
+
+            <a
+              href="https://wa.me/919876543210?text=Hello%20TourTripHolidays%2C%20I%20would%20like%20to%20enquire%20about%20a%20tour%20package."
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Chat on WhatsApp"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 active:scale-95 transition-transform"
+            >
+              <FaWhatsapp className="w-4 h-4 text-[#25D366]" />
+            </a>
+
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl text-[#082B50] hover:bg-slate-100 active:scale-90 flex items-center justify-center transition-all cursor-pointer"
+              aria-label="Open Navigation Drawer"
+            >
+              <Menu className="w-6 h-6" />
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Mobile Drawer */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden bg-white border-t border-slate-100 px-4 pt-3 pb-6 shadow-xl animate-in slide-in-from-top-2 duration-200">
-            <nav className="flex flex-col gap-2 font-medium text-[#082B50]">
+      {/* =====================================================================
+          Native-Like Slide-in Mobile Navigation Drawer
+          - Backdrop blur overlay
+          - Slide-in panel from right (transforms on x-axis)
+          - Respects device top and bottom safe areas
+          - Grouped app-like list tiles
+          ===================================================================== */}
+      <div
+        className={`lg:hidden fixed inset-0 z-50 transition-opacity duration-300 ${
+          mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        aria-hidden={!mobileMenuOpen}
+      >
+        {/* Backdrop overlay */}
+        <div
+          onClick={() => setMobileMenuOpen(false)}
+          className="absolute inset-0 bg-[#082B50]/60 backdrop-blur-xs transition-opacity"
+        />
+
+        {/* Slide Drawer Panel */}
+        <div
+          className={`absolute top-0 right-0 bottom-0 w-[86%] max-w-[340px] bg-white z-10 shadow-2xl flex flex-col justify-between overflow-hidden transform transition-transform duration-300 ease-out pt-safe pb-safe ${
+            mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
+          {/* 1. Drawer Header */}
+          <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+            <div className="flex items-center gap-2">
+              <Logo variant="light" />
+            </div>
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-600 flex items-center justify-center active:scale-90 hover:bg-slate-100 transition-all cursor-pointer shadow-xs"
+              aria-label="Close Navigation Drawer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* 2. Scrollable Navigation List */}
+          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 touch-scroll">
+            {/* User Account Tile */}
+            <div className="rounded-2xl p-3 bg-gradient-to-br from-[#082B50]/5 to-orange-500/5 border border-slate-200/80">
+              {user ? (
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#082B50] text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                      {profile?.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || "U"}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-extrabold text-[#082B50] truncate">{profile?.full_name || "Traveler"}</p>
+                      <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <Link
+                      href="/my-enquiries"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center justify-center gap-1.5 py-2 px-2.5 bg-white border border-sky-100 text-[#082B50] text-xs font-bold rounded-xl shadow-xs active:scale-95"
+                    >
+                      <FileText className="w-3.5 h-3.5 text-[#F15A24]" />
+                      <span>My Enquiries</span>
+                    </Link>
+
+                    {isAdmin ? (
+                      <a
+                        href={process.env.NEXT_PUBLIC_ADMIN_URL || "https://admin.tourtripholidays.com"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center justify-center gap-1.5 py-2 px-2.5 bg-[#082B50] text-white text-xs font-bold rounded-xl shadow-xs active:scale-95"
+                      >
+                        <LayoutDashboard className="w-3.5 h-3.5 text-[#F15A24]" />
+                        <span>Admin</span>
+                      </a>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          signOut();
+                        }}
+                        className="flex items-center justify-center gap-1.5 py-2 px-2.5 bg-white border border-slate-200 text-red-600 text-xs font-bold rounded-xl shadow-xs active:scale-95"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>Sign Out</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h4 className="text-xs font-extrabold text-[#082B50]">Welcome, Traveler!</h4>
+                    <p className="text-[11px] text-slate-500">Track tour enquiries & bookings</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setAuthModalOpen(true);
+                    }}
+                    className="inline-flex items-center gap-1.5 bg-[#082B50] hover:bg-[#F15A24] text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer"
+                  >
+                    <UserIcon className="w-3.5 h-3.5 text-[#F15A24]" />
+                    <span>Login</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Main Navigation Links */}
+            <nav className="space-y-1 font-medium text-[#082B50]">
               <Link
                 href="/"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`px-3 py-2 rounded-lg font-bold transition-colors ${
+                className={`flex items-center justify-between px-3.5 py-3 rounded-xl font-bold transition-all active:scale-[0.98] ${
                   isHomeActive
-                    ? "font-extrabold text-[#F15A24] bg-[#EAF6FC]"
-                    : "hover:bg-slate-50 text-[#082B50]"
+                    ? "text-[#F15A24] bg-[#EAF6FC] font-extrabold"
+                    : "text-[#082B50] hover:bg-slate-50"
                 }`}
               >
-                Home
+                <div className="flex items-center gap-3">
+                  <Compass className={`w-4 h-4 ${isHomeActive ? "text-[#F15A24]" : "text-slate-400"}`} />
+                  <span className="text-sm">Home</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
               </Link>
 
-              {/* Mobile Packages Accordion */}
-              <div>
+              {/* Tour Packages Accordion */}
+              <div className="rounded-xl overflow-hidden">
                 <div
-                  className={`flex items-center justify-between rounded-lg transition-colors ${
+                  className={`flex items-center justify-between px-3.5 py-3 rounded-xl transition-colors ${
                     isPackagesActive ? "bg-[#EAF6FC]" : "hover:bg-slate-50"
                   }`}
                 >
                   <Link
                     href="/packages"
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex-1 px-3 py-2 text-left font-bold ${
-                      isPackagesActive ? "font-extrabold text-[#F15A24]" : "text-[#082B50]"
+                    className={`flex items-center gap-3 flex-1 text-sm font-bold ${
+                      isPackagesActive ? "text-[#F15A24] font-extrabold" : "text-[#082B50]"
                     }`}
                   >
-                    Tour Packages
+                    <MapPin className={`w-4 h-4 ${isPackagesActive ? "text-[#F15A24]" : "text-slate-400"}`} />
+                    <span>Tour Packages</span>
                   </Link>
+
                   <button
                     type="button"
                     onClick={() => setPackagesOpen(!packagesOpen)}
-                    className="p-2 text-slate-500 hover:text-[#F15A24] cursor-pointer"
-                    aria-label="Toggle packages sub-menu"
+                    className="p-1.5 text-slate-500 hover:text-[#F15A24] cursor-pointer"
+                    aria-label="Toggle Tour Packages list"
                   >
                     <ChevronDown
                       className={`w-4 h-4 transition-transform ${
@@ -358,14 +533,15 @@ export default function Header() {
                     />
                   </button>
                 </div>
+
                 {packagesOpen && (
-                  <div className="pl-6 pr-2 py-1 space-y-1">
+                  <div className="pl-9 pr-2 py-1.5 space-y-1 bg-slate-50/60 rounded-b-xl border-l-2 border-[#F15A24]/40 ml-4 my-1">
                     {packageLinks.map((pkg) => (
                       <Link
                         key={pkg.name}
                         href={pkg.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className={`block py-1.5 text-sm transition-colors ${
+                        className={`block py-2 text-xs font-semibold transition-colors ${
                           pkg.href === "/packages" && pathname === "/packages"
                             ? "text-[#F15A24] font-bold"
                             : "text-slate-600 hover:text-[#F15A24]"
@@ -378,25 +554,32 @@ export default function Header() {
                 )}
               </div>
 
-              {/* Mobile Destinations Accordion */}
-              <div>
+              {/* Destinations Accordion */}
+              <div className="rounded-xl overflow-hidden">
                 <button
+                  type="button"
                   onClick={() => setDestinationsOpen(!destinationsOpen)}
-                  className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 text-left font-bold text-[#082B50]"
+                  className="w-full flex items-center justify-between px-3.5 py-3 rounded-xl hover:bg-slate-50 text-left font-bold text-[#082B50] active:scale-[0.98] transition-all cursor-pointer"
                 >
-                  <span>Destinations</span>
+                  <div className="flex items-center gap-3">
+                    <Sparkles className="w-4 h-4 text-slate-400" />
+                    <span className="text-sm">Destinations</span>
+                  </div>
                   <ChevronDown
-                    className={`w-4 h-4 transition-transform ${destinationsOpen ? "rotate-180 text-[#F15A24]" : ""}`}
+                    className={`w-4 h-4 text-slate-400 transition-transform ${
+                      destinationsOpen ? "rotate-180 text-[#F15A24]" : ""
+                    }`}
                   />
                 </button>
+
                 {destinationsOpen && (
-                  <div className="pl-6 pr-2 py-1 space-y-1">
+                  <div className="pl-9 pr-2 py-1.5 space-y-1 bg-slate-50/60 rounded-b-xl border-l-2 border-[#F15A24]/40 ml-4 my-1">
                     {destinationLinks.map((dest) => (
                       <a
                         key={dest.name}
                         href={dest.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="block py-1.5 text-sm text-slate-600 hover:text-[#F15A24]"
+                        className="block py-2 text-xs text-slate-600 hover:text-[#F15A24] font-semibold transition-colors"
                       >
                         {dest.name}
                       </a>
@@ -405,102 +588,83 @@ export default function Header() {
                 )}
               </div>
 
+              {/* Blog */}
               <Link
                 href="/blog"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`px-3 py-2 rounded-lg font-bold transition-colors ${
+                className={`flex items-center justify-between px-3.5 py-3 rounded-xl font-bold transition-all active:scale-[0.98] ${
                   isBlogActive
-                    ? "font-extrabold text-[#F15A24] bg-[#EAF6FC]"
-                    : "hover:bg-slate-50 text-[#082B50]"
+                    ? "text-[#F15A24] bg-[#EAF6FC] font-extrabold"
+                    : "text-[#082B50] hover:bg-slate-50"
                 }`}
               >
-                Blog
+                <div className="flex items-center gap-3">
+                  <BookOpen className={`w-4 h-4 ${isBlogActive ? "text-[#F15A24]" : "text-slate-400"}`} />
+                  <span className="text-sm">Travel Stories & Blog</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
               </Link>
 
+              {/* About Us */}
               <Link
                 href="/about"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`px-3 py-2 rounded-lg font-bold transition-colors ${
+                className={`flex items-center justify-between px-3.5 py-3 rounded-xl font-bold transition-all active:scale-[0.98] ${
                   isAboutActive
-                    ? "font-extrabold text-[#F15A24] bg-[#EAF6FC]"
-                    : "hover:bg-slate-50 text-[#082B50]"
+                    ? "text-[#F15A24] bg-[#EAF6FC] font-extrabold"
+                    : "text-[#082B50] hover:bg-slate-50"
                 }`}
               >
-                About Us
+                <div className="flex items-center gap-3">
+                  <Info className={`w-4 h-4 ${isAboutActive ? "text-[#F15A24]" : "text-slate-400"}`} />
+                  <span className="text-sm">About Us</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
               </Link>
 
+              {/* Contact Us */}
               <Link
                 href="/#footer"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-slate-50 font-bold text-[#082B50]"
+                className="flex items-center justify-between px-3.5 py-3 rounded-xl hover:bg-slate-50 font-bold text-[#082B50] active:scale-[0.98] transition-all"
               >
-                Contact Us
+                <div className="flex items-center gap-3">
+                  <Phone className="w-4 h-4 text-slate-400" />
+                  <span className="text-sm">Contact Support</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
               </Link>
-
-              {/* Mobile Auth Button */}
-              <div className="pt-3 border-t border-slate-100">
-                {user ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg">
-                      <div className="w-8 h-8 rounded-full bg-[#082B50] text-white flex items-center justify-center text-xs font-bold">
-                        {profile?.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || "U"}
-                      </div>
-                      <div className="truncate">
-                        <p className="text-xs font-bold text-[#082B50] truncate">{profile?.full_name || "User"}</p>
-                        <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
-                      </div>
-                    </div>
-                    {/* My Enquiries (Mobile) */}
-                    <Link
-                      href="/my-enquiries"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center justify-center gap-2 w-full py-2 bg-[#EAF6FC] text-[#082B50] text-xs font-bold rounded-lg border border-sky-100"
-                    >
-                      <FileText className="w-4 h-4 text-[#F15A24]" />
-                      <span>My Enquiries</span>
-                    </Link>
-
-                    {isAdmin && (
-                      <a
-                        href={process.env.NEXT_PUBLIC_ADMIN_URL || "https://admin.tourtripholidays.com"}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center justify-center gap-2 w-full py-2 bg-[#082B50] text-white text-xs font-bold rounded-lg shadow-xs"
-                      >
-                        <LayoutDashboard className="w-4 h-4 text-[#F15A24]" />
-                        <span>Go to Admin Dashboard</span>
-                      </a>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        signOut();
-                      }}
-                      className="w-full py-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg text-center cursor-pointer"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      setAuthModalOpen(true);
-                    }}
-                    className="w-full flex items-center justify-center gap-2 bg-[#082B50] text-white text-xs font-bold py-2.5 rounded-lg shadow-xs cursor-pointer"
-                  >
-                    <UserIcon className="w-4 h-4 text-[#F15A24]" />
-                    <span>Login / Register</span>
-                  </button>
-                )}
-              </div>
             </nav>
           </div>
-        )}
-      </header>
+
+          {/* 3. Drawer Bottom Action Strip */}
+          <div className="p-4 border-t border-slate-100 bg-slate-50/80 space-y-2.5">
+            <div className="grid grid-cols-2 gap-2">
+              <a
+                href="tel:+919876543210"
+                className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-[#082B50] text-white text-xs font-bold shadow-xs active:scale-95 transition-transform"
+              >
+                <FaPhone className="w-3.5 h-3.5 text-[#F15A24]" />
+                <span>Call Us</span>
+              </a>
+
+              <a
+                href="https://wa.me/919876543210?text=Hello%20TourTripHolidays%2C%20I%20would%20like%20to%20enquire%20about%20a%20tour%20package."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-[#25D366] text-white text-xs font-bold shadow-xs active:scale-95 transition-transform"
+              >
+                <FaWhatsapp className="w-4 h-4 text-white" />
+                <span>WhatsApp</span>
+              </a>
+            </div>
+
+            <p className="text-[10px] text-center text-slate-400 font-medium pt-1">
+              Domestic Travel Partner • All 28 States of India
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Auth Modal */}
       <AuthModal

@@ -86,7 +86,7 @@ export default function PopularPackages() {
     return (
       <Link
         href="/packages"
-        className="inline-flex items-center gap-2 bg-[#F15A24] hover:bg-[#d94815] text-white font-extrabold text-sm px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-200 group"
+        className="inline-flex items-center justify-center gap-2 bg-[#F15A24] hover:bg-[#d94815] text-white font-extrabold text-sm px-6 py-3.5 rounded-full shadow-md hover:shadow-lg active:scale-95 transition-all duration-200 group w-full sm:w-auto"
       >
         <span>View All Packages</span>
         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -138,13 +138,13 @@ export default function PopularPackages() {
             {/* Scrollable Container */}
             <div
               ref={scrollRef}
-              className="flex gap-4 overflow-x-auto pb-4 pt-1 px-1 scrollbar-none scroll-smooth snap-x snap-mandatory"
+              className="flex gap-3.5 sm:gap-4 overflow-x-auto pb-4 pt-1 px-1 scrollbar-none scroll-smooth snap-x snap-mandatory touch-scroll"
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
               {packages.map((pkg) => (
                 <div
                   key={pkg.id}
-                  className="flex-shrink-0 w-[240px] sm:w-[260px] snap-start bg-white rounded-xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 overflow-hidden flex flex-col group"
+                  className="flex-shrink-0 w-[78vw] max-w-[280px] sm:w-[260px] snap-start bg-white rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-xl active:scale-[0.98] transition-all duration-300 overflow-hidden flex flex-col group"
                 >
                   {/* 1. Package Cover Image */}
                   <div className="relative h-44 sm:h-48 w-full overflow-hidden bg-slate-100">
@@ -153,7 +153,7 @@ export default function PopularPackages() {
                       alt={pkg.title}
                       fill
                       unoptimized={pkg.image.startsWith("http")}
-                      sizes="260px"
+                      sizes="280px"
                       className="object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
                     />
                   </div>
@@ -166,7 +166,7 @@ export default function PopularPackages() {
 
                     <Link
                       href={`/tours/${pkg.slug}`}
-                      className="inline-flex items-center justify-center gap-1.5 w-full bg-[#082B50] hover:bg-[#F15A24] text-white font-bold text-xs py-2.5 px-4 rounded-lg transition-colors group/btn shadow-xs cursor-pointer"
+                      className="inline-flex items-center justify-center gap-1.5 w-full bg-[#082B50] hover:bg-[#F15A24] text-white font-bold text-xs py-3 px-4 rounded-xl transition-colors group/btn shadow-xs active:scale-95 cursor-pointer min-h-[44px]"
                     >
                       <span>View Details</span>
                       <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />

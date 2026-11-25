@@ -11,7 +11,7 @@ interface BlogCardProps {
 
 export default function BlogCard({ blog }: BlogCardProps) {
   return (
-    <article className="bg-white rounded-xl sm:rounded-2xl overflow-hidden border border-[#DCEAF3] shadow-xs hover:border-[#F15A24]/50 hover:shadow-md transition-all duration-300 flex flex-col group h-full select-none">
+    <article className="bg-white rounded-xl sm:rounded-2xl overflow-hidden border border-[#DCEAF3] shadow-xs hover:border-[#F15A24]/50 hover:shadow-md active:scale-[0.98] transition-all duration-300 flex flex-col group h-full select-none">
       {/* Featured Image with Natural 16:9 Aspect Ratio */}
       <div className="relative w-full aspect-[16/9] bg-slate-100 overflow-hidden block">
         {blog.featured_image ? (

@@ -167,6 +167,43 @@ export default function AdminToursPage() {
     }
   };
 
+  // Handle Quick Featured Toggle (Featured <-> Normal)
+  const handleToggleFeatured = async (tour: Tour) => {
+    const newFeatured = !tour.featured;
+
+    if (!UUID_REGEX.test(tour.id)) {
+      setTours((prev) =>
+        prev.map((t) => (t.id === tour.id ? { ...t, featured: newFeatured } : t))
+      );
+      return;
+    }
+
+    if (!isConfigured) return;
+
+    try {
+      const token = await getAdminBearerToken();
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const res = await fetch(`/api/tours/${tour.id}`, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({ featured: newFeatured }),
+      });
+      const json = await res.json();
+
+      if (res.ok && json.success) {
+        setTours((prev) =>
+          prev.map((t) => (t.id === tour.id ? { ...t, featured: newFeatured } : t))
+        );
+      } else {
+        throw new Error(json.error || json.message || "Failed to update featured status");
+      }
+    } catch (err) {
+      console.error("Failed to toggle tour featured status:", err);
+    }
+  };
+
   // Open Delete Confirmation
   const openDeleteModal = (tour: Tour) => {
     setTourToDelete(tour);
@@ -442,9 +479,23 @@ export default function AdminToursPage() {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1.5">
-                        <span className="text-[10px] font-bold text-[#F04B16] bg-[#FFF2ED] border border-[#FDDCD0] px-2 py-0.5 rounded-md uppercase tracking-wider">
-                          {tour.category || "Tour"}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold text-[#F04B16] bg-[#FFF2ED] border border-[#FDDCD0] px-2 py-0.5 rounded-md uppercase tracking-wider">
+                            {tour.category || "Tour"}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleFeatured(tour)}
+                            className={`text-[10px] font-bold px-1.5 py-0.5 rounded border transition-colors cursor-pointer ${
+                              tour.featured
+                                ? "bg-amber-50 text-amber-700 border-amber-300"
+                                : "text-slate-400 border-slate-200 hover:text-amber-600"
+                            }`}
+                            title="Toggle Featured"
+                          >
+                            {tour.featured ? "★ Featured" : "☆"}
+                          </button>
+                        </div>
                         {/* Status Toggle Button on Mobile */}
                         <button
                           type="button"
@@ -602,6 +653,18 @@ export default function AdminToursPage() {
                           {tour.tour_type && (
                             <span className="text-[#94A3B8] truncate">· {tour.tour_type}</span>
                           )}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleFeatured(tour)}
+                            className={`text-[10px] font-bold px-1.5 py-0.2 rounded border transition-colors cursor-pointer ${
+                              tour.featured
+                                ? "bg-amber-50 text-amber-700 border-amber-300"
+                                : "text-slate-400 border-transparent hover:border-slate-200 hover:text-amber-600"
+                            }`}
+                            title="Click to toggle featured"
+                          >
+                            {tour.featured ? "★ Featured" : "☆ Set Featured"}
+                          </button>
                         </div>
                       </div>
                     </td>

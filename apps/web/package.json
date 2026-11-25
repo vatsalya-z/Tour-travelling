@@ -5,7 +5,6 @@
   "scripts": {
     "dev": "next dev --webpack --port 3000",
     "build": "next build --webpack",
-    "postbuild": "node ../../scripts/sync-root-build.mjs",
     "start": "next start --port 3000",
     "lint": "eslint"
   },

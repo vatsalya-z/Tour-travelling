@@ -89,7 +89,7 @@ export default function AboutHero({ data }: AboutHeroProps) {
         <div className="mt-8 sm:mt-12 flex justify-center px-4">
           <Link
             href={data.cta_link || "/packages"}
-            className="inline-flex items-center gap-2.5 bg-[#F15A24] hover:bg-[#d94815] text-white font-bold text-sm sm:text-base px-8 py-3.5 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 group cursor-pointer"
+            className="inline-flex items-center justify-center gap-2.5 bg-[#F15A24] hover:bg-[#d94815] active:scale-95 text-white font-bold text-sm sm:text-base px-8 py-3.5 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 group cursor-pointer min-h-[48px] w-full sm:w-auto"
           >
             <span>{data.cta_text}</span>
             <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />

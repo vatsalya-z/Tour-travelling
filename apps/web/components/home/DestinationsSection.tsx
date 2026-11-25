@@ -127,12 +127,12 @@ export default function DestinationsSection({ onSelectDestination }: Destination
         </div>
 
         {/* Destination Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-3 sm:gap-3.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-2.5 sm:gap-3.5">
           {destinations.map((dest, idx) => (
             <div
               key={idx}
               onClick={() => handleClick(dest)}
-              className={`group relative rounded-xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 block aspect-[3/4.2] cursor-pointer ${
+              className={`group relative rounded-2xl overflow-hidden shadow-xs hover:shadow-xl active:scale-[0.96] transition-all duration-300 transform hover:-translate-y-1 block aspect-[3/4.2] cursor-pointer ${
                 dest.isSpecial ? "ring-2 ring-[#F15A24]/70" : "border border-slate-200/90"
               }`}
             >
